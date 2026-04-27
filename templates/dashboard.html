@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+
+<!-- STATS -->
+<div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-gray-500">Åbne tickets</p>
+        <h3 class="text-2xl font-bold">
+            {{ tickets|selectattr("status", "equalto", "open")|list|length }}
+        </h3>
+    </div>
+
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-gray-500">Lukkede tickets</p>
+        <h3 class="text-2xl font-bold">
+            {{ tickets|selectattr("status", "equalto", "closed")|list|length }}
+        </h3>
+    </div>
+
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-gray-500">Total</p>
+        <h3 class="text-2xl font-bold">{{ tickets|length }}</h3>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div class="bg-white rounded shadow overflow-hidden">
+
+<table class="w-full text-sm">
+<thead class="bg-gray-100">
+<tr>
+
+    <!-- ID -->
+    <th class="p-3 text-left">
+        <a href="/?sort=id&order={{ 'desc' if sort == 'id' and order == 'asc' else 'asc' }}">
+            ID
+            {% if sort == "id" %}
+                {{ "↑" if order == "asc" else "↓" }}
+            {% endif %}
+        </a>
+    </th>
+
+    <!-- TITLE -->
+    <th class="p-3 text-left">
+        <a href="/?sort=title&order={{ 'desc' if sort == 'title' and order == 'asc' else 'asc' }}">
+            Titel
+            {% if sort == "title" %}
+                {{ "↑" if order == "asc" else "↓" }}
+            {% endif %}
+        </a>
+    </th>
+
+    <!-- PRIORITY -->
+    <th class="p-3 text-center">
+        <a href="/?sort=priority&order={{ 'desc' if sort == 'priority' and order == 'asc' else 'asc' }}">
+            Prioritet
+            {% if sort == "priority" %}
+                {{ "↑" if order == "asc" else "↓" }}
+            {% endif %}
+        </a>
+    </th>
+
+    <!-- STATUS -->
+    <th class="p-3 text-center">
+        <a href="/?sort=status&order={{ 'desc' if sort == 'status' and order == 'asc' else 'asc' }}">
+            Status
+            {% if sort == "status" %}
+                {{ "↑" if order == "asc" else "↓" }}
+            {% endif %}
+        </a>
+    </th>
+
+    <!-- CREATED -->
+    <th class="p-3 text-center">
+        <a href="/?sort=created&order={{ 'desc' if sort == 'created' and order == 'asc' else 'asc' }}">
+            Oprettet
+            {% if sort == "created" %}
+                {{ "↑" if order == "asc" else "↓" }}
+            {% endif %}
+        </a>
+    </th>
+
+    <!-- UPDATED -->
+    <th class="p-3 text-center">
+        <a href="/?sort=updated&order={{ 'desc' if sort == 'updated' and order == 'asc' else 'asc' }}">
+            Opdateret
+            {% if sort == "updated" %}
+                {{ "↑" if order == "asc" else "↓" }}
+            {% endif %}
+        </a>
+    </th>
+
+    <th class="p-3 text-center">Handling</th>
+
+</tr>
+</thead>
+
+<tbody>
+{% for t in tickets %}
+<tr class="border-t hover:bg-gray-50 transition">
+
+    <td class="p-3">{{ t.id }}</td>
+
+    <td class="p-3">
+        <a href="/ticket/{{ t.id }}" class="text-blue-600 hover:underline font-medium">
+            {{ t.title }}
+        </a>
+    </td>
+
+    <td class="p-3 text-center">
+        {% if t.priority == "high" %}
+            <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Høj</span>
+        {% elif t.priority == "medium" %}
+            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Mellem</span>
+        {% else %}
+            <span class="bg-gray-200 px-2 py-1 rounded text-xs">Lav</span>
+        {% endif %}
+    </td>
+
+    <td class="p-3 text-center">
+        {% if t.status == "open" %}
+            <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Åben</span>
+        {% else %}
+            <span class="bg-gray-300 px-2 py-1 rounded text-xs">Lukket</span>
+        {% endif %}
+    </td>
+
+    <td class="p-3 text-center text-xs text-gray-500">
+        {{ t.created_at.strftime("%d-%m-%Y %H:%M") }}
+    </td>
+
+    <td class="p-3 text-center text-xs text-gray-500">
+        {{ t.updated_at.strftime("%d-%m-%Y %H:%M") }}
+    </td>
+
+    <td class="p-3 text-center">
+
+        <!-- STATUS -->
+        <form method="POST" action="/ticket/{{ t.id }}" class="inline">
+            <input type="hidden" name="source" value="dashboard">
+
+            {% if t.status == "open" %}
+                <button name="action" value="close"
+                        class="w-20 text-center bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 text-xs">
+                    Luk
+                </button>
+            {% else %}
+                <button name="action" value="open"
+                        class="w-20 text-center bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 text-xs">
+                    Genåbn
+                </button>
+            {% endif %}
+        </form>
+
+        <!-- DELETE -->
+        <form method="POST" action="/ticket/{{ t.id }}/delete"
+              onsubmit="return confirm('Slet ticket?');"
+              class="inline ml-2">
+
+            <button class="text-gray-400 hover:text-red-600 text-xs">
+                🗑
+            </button>
+
+        </form>
+
+    </td>
+
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

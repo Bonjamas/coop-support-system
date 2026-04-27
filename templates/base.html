@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>Coop IT Support</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+    <!-- SIDEBAR -->
+    <div class="w-64 bg-gray-900 text-white flex flex-col">
+
+        <div class="p-4 border-b border-gray-700 flex items-center gap-2">
+            <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-8">
+            <span class="font-bold">Coop IT</span>
+        </div>
+
+        <nav class="p-4 space-y-2">
+            <a href="/" class="block p-2 rounded hover:bg-gray-700">🏠 Hjem</a>
+            <a href="/create" class="block p-2 rounded hover:bg-gray-700">➕ Opret ticket</a>
+        </nav>
+
+    </div>
+
+    <!-- MAIN -->
+    <div class="flex-1 flex flex-col">
+
+        <!-- TOPBAR -->
+        <div class="bg-white shadow px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-semibold">IT Support System</h1>
+
+            <span class="text-sm text-gray-500">Coop Internal</span>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="p-6 overflow-y-auto">
+            {% block content %}{% endblock %}
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="w-full">
+
+    <div class="bg-white rounded shadow p-6">
+
+        <h2 class="text-2xl font-bold mb-2">{{ ticket.title }}</h2>
+
+        <p class="text-gray-600 mb-4">{{ ticket.description }}</p>
+
+        <div class="flex gap-6 mb-4">
+
+            <div>
+                <p class="text-sm text-gray-500">Prioritet</p>
+                {% if ticket.priority == "high" %}
+                    <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Høj</span>
+                {% elif ticket.priority == "medium" %}
+                    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Mellem</span>
+                {% else %}
+                    <span class="bg-gray-200 px-2 py-1 rounded text-xs">Lav</span>
+                {% endif %}
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">Status</p>
+                {% if ticket.status == "open" %}
+                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Åben</span>
+                {% else %}
+                    <span class="bg-gray-300 px-2 py-1 rounded text-xs">Lukket</span>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <hr class="my-4">
+
+        <form method="POST" class="flex gap-2">
+            <input type="hidden" name="source" value="detail">
+
+            {% if ticket.status == "open" %}
+                <button name="action" value="close"
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    Luk ticket
+                </button>
+            {% else %}
+                <button name="action" value="open"
+                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Genåbn ticket
+                </button>
+            {% endif %}
+        </form>
+
+        <hr class="my-6">
+
+        <form method="POST" action="/ticket/{{ ticket.id }}/delete"
+            onsubmit="return confirm('Er du sikker på du vil slette denne ticket?');">
+
+            <button class="bg-gray-200 text-red-600 px-4 py-2 rounded hover:bg-gray-300 text-sm">
+                🗑 Slet ticket
+            </button>
+
+        </form>
+
+        <a href="/" class="inline-block mt-4 text-gray-500 hover:underline">
+            ← Tilbage til dashboard
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
