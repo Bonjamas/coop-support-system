@@ -109,8 +109,13 @@ def delete_ticket(id):
 
 
 # -----------------------
-# DB INIT
+# DB ERROR & DB INIT 
 # -----------------------
+@app.route("/db-error")
+def db_error():
+    next_url = request.args.get("next", "/")
+    return render_template("db_error.html", next_url=next_url)
+
 with app.app_context():
     if check_db_connection():
         db.create_all()

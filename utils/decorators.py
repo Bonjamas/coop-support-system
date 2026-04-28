@@ -1,11 +1,11 @@
 from functools import wraps
-from flask import redirect
+from flask import redirect, url_for, request
 from utils.db import check_db_connection
 
-def db_required(view_func):
-    @wraps(view_func)
-    def wrapper(*args, **kwargs):
+def db_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
         if not check_db_connection():
-            return redirect("/db-error")
-        return view_func(*args, **kwargs)
-    return wrapper
+            return redirect(url_for("db_error", next=request.path))
+        return f(*args, **kwargs)
+    return decorated
