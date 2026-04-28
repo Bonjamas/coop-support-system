@@ -2,10 +2,63 @@
 
 {% block content %}
 
-<div class="alert alert-danger text-center mt-5">
-    <h4>Database utilgængelig</h4>
-    <p>Systemet kan ikke forbinde til databasen.</p>
-    <a href="/" class="btn btn-danger mt-2">Prøv igen</a>
+<div class="flex items-center justify-center min-h-[70vh]">
+
+    <div class="bg-white rounded-2xl shadow-lg p-10 max-w-md w-full text-center">
+
+        <!-- Icon -->
+        <div class="flex justify-center mb-4">
+            <div class="bg-red-100 text-red-600 rounded-full p-4 text-2xl">
+                ⚠️
+            </div>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">
+            Database er nede
+        </h2>
+
+        <!-- Description -->
+        <p class="text-gray-500 mb-6">
+            Systemet forsøger automatisk at genoprette forbindelsen...
+        </p>
+
+        <!-- Spinner -->
+        <div class="flex justify-center mb-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-4 border-red-500 border-t-transparent"></div>
+        </div>
+
+        <!-- Info (dynamic countdown) -->
+        <p id="refresh-text" class="text-sm text-gray-400">
+            Siden opdateres automatisk om 5 sekunder...
+        </p>
+
+        <!-- Manual refresh -->
+        <div class="mt-6">
+            <a href="/" class="text-sm text-red-600 hover:underline">
+                Prøv igen nu
+            </a>
+        </div>
+
+    </div>
+
 </div>
+
+<!-- Auto refresh script -->
+<script>
+    let seconds = 5;
+    const text = document.getElementById("refresh-text");
+    const nextUrl = "{{ next_url }}";
+
+    const interval = setInterval(() => {
+        seconds--;
+        text.innerText = `Siden opdateres automatisk om ${seconds} sekunder...`;
+
+        if (seconds <= 0) {
+            clearInterval(interval);
+            window.location.href = nextUrl; // 👈 vigtig ændring
+        }
+    }, 1000);
+</script>
 
 {% endblock %}
