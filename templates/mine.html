@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="text-2xl font-bold mb-6">{{ title }}</h2>
+
+<!-- 🔘 Tabs -->
+<div class="flex gap-4 mb-4">
+
+    <a href="/mine"
+       class="px-4 py-2 rounded text-sm
+       {% if request.path == '/mine' %}
+           bg-blue-600 text-white
+       {% else %}
+           bg-gray-200
+       {% endif %}">
+        Aktive
+    </a>
+
+    <a href="/mine/resolved"
+       class="px-4 py-2 rounded text-sm
+       {% if request.path == '/mine/resolved' %}
+           bg-blue-600 text-white
+       {% else %}
+           bg-gray-200
+       {% endif %}">
+        Løste
+    </a>
+
+</div>
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+
+<table class="w-full text-sm">
+
+<thead class="bg-gray-50 text-xs uppercase text-gray-600">
+<tr>
+    <th class="p-4 text-left">ID</th>
+    <th class="p-4 text-left">Titel</th>
+    <th class="p-4 text-left">Prioritet</th>
+    <th class="p-4 text-left">Tilstand</th>
+    <th class="p-4 text-left">Opdateret</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for t in tickets %}
+<tr class="border-t">
+
+    <td class="p-4">INC{{ "%06d"|format(t.id) }}</td>
+
+    <td class="p-4">
+        <a href="/ticket/{{ t.id }}" class="text-blue-600 hover:underline">
+            {{ t.title }}
+        </a>
+    </td>
+
+    <td class="p-4">
+        {% if t.priority == "high" %}
+            <span class="text-red-600">Høj</span>
+        {% elif t.priority == "medium" %}
+            <span class="text-yellow-600">Mellem</span>
+        {% else %}
+            <span class="text-green-600">Lav</span>
+        {% endif %}
+    </td>
+
+    <td class="p-4">
+        {% if t.state == "new" %}
+            Ny
+        {% elif t.state == "in_progress" %}
+            I gang
+        {% else %}
+            Løst
+        {% endif %}
+    </td>
+
+    <td class="p-4 text-xs">
+        {{ t.updated_at.strftime("%d-%m-%Y %H:%M") }}
+    </td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}
