@@ -1,5 +1,7 @@
 from sqlalchemy import text
+
 from models import db
+
 
 def check_db_connection():
     try:

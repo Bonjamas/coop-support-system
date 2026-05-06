@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>Coop IT Support</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+</head>
+
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+
+<div class="bg-white rounded-2xl shadow-lg p-10 max-w-md w-full text-center">
+
+    <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-12 mx-auto mb-6">
+
+    <h1 class="text-5xl font-bold text-gray-800 mb-2">{{ code }}</h1>
+    <p class="text-gray-600 mb-8">{{ message }}</p>
+
+    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 inline-block">
+        Tilbage til forsiden
+    </a>
+
+</div>
+
+</body>
+</html>

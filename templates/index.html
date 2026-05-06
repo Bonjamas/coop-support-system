@@ -1,10 +1,58 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>Coop IT Support</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+</head>
 
-{% block content %}
-<div class="text-center mt-5">
-    <h1 class="mb-3">Velkommen til Coop IT Support</h1>
-    <p class="text-muted">Opret og håndter support tickets nemt</p>
+<body class="h-screen">
 
-    <a href="/create" class="btn btn-success btn-lg mt-3">Opret ticket</a>
+<div class="relative h-full w-full">
+
+    <div class="absolute inset-0 bg-cover bg-center"
+         style="background-image: url('{{ url_for('static', filename='images/background.png') }}');">
+    </div>
+
+    <div class="absolute inset-0 bg-black/60"></div>
+
+    <div class="relative z-10 flex flex-col justify-center items-center h-full text-white text-center px-6">
+
+        <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-16 mb-6">
+
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Coop IT Support</h1>
+
+        <p class="text-lg md:text-xl text-gray-200 max-w-xl mb-8">
+            Central platform til håndtering af IT-support i Coop.
+            Få overblik over incidents, opret sager og følg status.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+
+            {% if session.user %}
+                <a href="/dashboard"
+                   class="bg-red-600 px-6 py-3 rounded text-white font-semibold hover:bg-red-700 transition">
+                    Åbn dashboard
+                </a>
+                <a href="/logout"
+                   class="bg-white/10 px-6 py-3 rounded text-white border border-white/30 hover:bg-white/20 transition">
+                    Log ud
+                </a>
+                <div class="text-sm text-gray-300 mt-4">
+                    Logget ind som <span class="font-semibold">{{ session.user.name }}</span>
+                </div>
+            {% else %}
+                <a href="/login"
+                   class="bg-red-600 px-6 py-3 rounded text-white font-semibold hover:bg-red-700 transition">
+                    Login med Microsoft
+                </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
 </div>
-{% endblock %}
+
+</body>
+</html>

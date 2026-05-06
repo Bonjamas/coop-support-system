@@ -2,73 +2,285 @@
 
 {% block content %}
 
-<div class="w-full">
+<div class="bg-white shadow rounded-xl p-4 flex justify-between items-center mb-4">
 
-    <div class="bg-white rounded shadow p-6">
+    <div class="font-semibold text-gray-700">
+        INC{{ "%06d"|format(ticket.id) }}
+    </div>
 
-        <h2 class="text-2xl font-bold mb-2">{{ ticket.title }}</h2>
+    <div class="flex gap-2 items-center">
+        {% if role in ["admin", "support"] %}
+        <button form="editForm" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Gem</button>
+        <button type="button"
+                onclick="setResolved(); document.getElementById('editForm').submit();"
+                class="bg-green-600 text-white px-4 py-2 rounded text-sm">Løs</button>
+        {% endif %}
+        {% if role not in ["admin", "support"] and ticket.state != "resolved" %}
+        <form method="POST" onsubmit="return confirm('Er du sikker på du vil lukke denne ticket?')">
+            <input type="hidden" name="action" value="close">
+            <button class="bg-green-600 text-white px-4 py-2 rounded text-sm">Luk ticket</button>
+        </form>
+        {% endif %}
+        {% if role == "admin" %}
+        <form method="POST" action="/ticket/{{ ticket.id }}/delete"
+              onsubmit="return confirm('Er du sikker på du vil slette denne ticket?')">
+            <button class="text-red-400 hover:text-red-600 p-2 rounded hover:bg-red-50 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </form>
+        {% endif %}
+    </div>
 
-        <p class="text-gray-600 mb-4">{{ ticket.description }}</p>
+</div>
 
-        <div class="flex gap-6 mb-4">
+<div class="space-y-6">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
             <div>
-                <p class="text-sm text-gray-500">Prioritet</p>
-                {% if ticket.priority == "high" %}
-                    <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Høj</span>
-                {% elif ticket.priority == "medium" %}
-                    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Mellem</span>
+                <label class="text-xs text-gray-500">Nummer</label>
+                <input value="INC{{ "%06d"|format(ticket.id) }}"
+                       class="w-full border p-2 rounded bg-gray-100" disabled>
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-500">Anmodet af</label>
+                {% if role in ["admin", "support"] %}
+                <input id="requestedSearch"
+                       value="{{ ticket.requested_by_name or '' }}"
+                       class="w-full border p-2 rounded">
+                <div id="requestedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
+                <input type="hidden" name="requested_by" id="requested_oid" value="{{ ticket.requested_by or '' }}" form="editForm">
                 {% else %}
-                    <span class="bg-gray-200 px-2 py-1 rounded text-xs">Lav</span>
+                <input value="{{ ticket.requested_by_name or '' }}"
+                       class="w-full border p-2 rounded bg-gray-100" disabled>
                 {% endif %}
             </div>
 
             <div>
-                <p class="text-sm text-gray-500">Status</p>
-                {% if ticket.status == "open" %}
-                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Åben</span>
+                <label class="text-xs text-gray-500">Kontakt info</label>
+                <input name="contact_info"
+                       value="{{ ticket.contact_info or '' }}"
+                       {% if role in ["admin", "support"] %}form="editForm"{% else %}disabled{% endif %}
+                       class="w-full border p-2 rounded {% if role not in ['admin', 'support'] %}bg-gray-100{% endif %}">
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-500">Type</label>
+                {% if role not in ["admin", "support"] %}
+                <input value="{% if ticket.type == 'support' %}Brugersupport{% elif ticket.type == 'funktionalitet' %}Funktionalitet{% elif ticket.type == 'nedbrud' %}Nedbrud{% else %}—{% endif %}"
+                       class="w-full border p-2 rounded bg-gray-100" disabled>
                 {% else %}
-                    <span class="bg-gray-300 px-2 py-1 rounded text-xs">Lukket</span>
+                <select name="type" form="editForm" class="w-full border p-2 rounded">
+                    <option value="support" {% if ticket.type=="support" or not ticket.type %}selected{% endif %}>Brugersupport</option>
+                    <option value="funktionalitet" {% if ticket.type=="funktionalitet" %}selected{% endif %}>Funktionalitet</option>
+                    <option value="nedbrud" {% if ticket.type=="nedbrud" %}selected{% endif %}>Nedbrud</option>
+                </select>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-500">Prioritet</label>
+                {% if role not in ["admin", "support"] %}
+                <input value="{% if ticket.priority == 'high' %}Høj{% elif ticket.priority == 'low' %}Lav{% else %}Mellem{% endif %}"
+                       class="w-full border p-2 rounded bg-gray-100" disabled>
+                {% else %}
+                <select name="priority" form="editForm" class="w-full border p-2 rounded">
+                    <option value="low" {% if ticket.priority=="low" %}selected{% endif %}>Lav</option>
+                    <option value="medium" {% if ticket.priority=="medium" or not ticket.priority %}selected{% endif %}>Mellem</option>
+                    <option value="high" {% if ticket.priority=="high" %}selected{% endif %}>Høj</option>
+                </select>
                 {% endif %}
             </div>
 
         </div>
 
-        <hr class="my-4">
+        <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
-        <form method="POST" class="flex gap-2">
-            <input type="hidden" name="source" value="detail">
+            <div>
+                <label class="text-xs text-gray-500">Tilstand</label>
+                {% if role not in ["admin", "support"] %}
+                <input value="{% if ticket.state == 'new' %}Ny{% elif ticket.state == 'in_progress' %}I gang{% else %}Løst{% endif %}"
+                       class="w-full border p-2 rounded bg-gray-100" disabled>
+                {% else %}
+                <select name="state" form="editForm" class="w-full border p-2 rounded">
+                    <option value="new" {% if ticket.state=="new" %}selected{% endif %}>Ny</option>
+                    <option value="in_progress" {% if ticket.state=="in_progress" %}selected{% endif %}>I gang</option>
+                    <option value="resolved" {% if ticket.state=="resolved" %}selected{% endif %}>Løst</option>
+                </select>
+                {% endif %}
+            </div>
 
-            {% if ticket.status == "open" %}
-                <button name="action" value="close"
-                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-                    Luk ticket
-                </button>
-            {% else %}
-                <button name="action" value="open"
-                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                    Genåbn ticket
-                </button>
+            <div>
+                <label class="text-xs text-gray-500">Tildelt til</label>
+                {% if role not in ["admin", "support"] %}
+                <input value="{{ ticket.assigned_to_name or 'Ikke tildelt' }}"
+                       class="w-full border p-2 rounded bg-gray-100" disabled>
+                {% else %}
+                <input id="assignedSearch"
+                       value="{{ ticket.assigned_to_name or '' }}"
+                       class="w-full border p-2 rounded">
+                <div id="assignedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
+                <input type="hidden" name="assigned_to" id="assigned_oid" value="{{ ticket.assigned_to or '' }}" form="editForm">
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-500">Oprettet af</label>
+                <input value="{{ ticket.created_by_name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-500">Oprettet</label>
+                <input value="{{ ticket.created_at.strftime('%d-%m-%Y %H:%M') }}" class="w-full border p-2 rounded bg-gray-100" disabled>
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-500">Opdateret</label>
+                <input value="{{ ticket.updated_at.strftime('%d-%m-%Y %H:%M') }}" class="w-full border p-2 rounded bg-gray-100" disabled>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- REDIGÉR -->
+    {% if role in ["admin", "support"] %}
+    <form method="POST" id="editForm" class="bg-white p-6 rounded-xl shadow space-y-4">
+        <input type="hidden" name="action" value="edit">
+        <div>
+            <label class="text-xs text-gray-500">Titel *</label>
+            <input name="title" value="{{ ticket.title }}" class="w-full border p-2 rounded">
+        </div>
+        <div>
+            <label class="text-xs text-gray-500">Beskrivelse</label>
+            <textarea name="description" class="w-full border p-2 rounded h-32">{{ ticket.description }}</textarea>
+        </div>
+    </form>
+    {% else %}
+    <div class="bg-white p-6 rounded-xl shadow space-y-4">
+        <div>
+            <label class="text-xs text-gray-500">Titel</label>
+            <input value="{{ ticket.title }}" class="w-full border p-2 rounded bg-gray-100" disabled>
+        </div>
+        <div>
+            <label class="text-xs text-gray-500">Beskrivelse</label>
+            <textarea class="w-full border p-2 rounded h-32 bg-gray-100" disabled>{{ ticket.description }}</textarea>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- AKTIVITET -->
+    <div class="bg-white p-6 rounded-xl shadow space-y-4">
+
+        <h3 class="font-semibold">Aktivitet</h3>
+
+        <form method="POST" class="space-y-3">
+            <input type="hidden" name="action" value="comment">
+            <textarea name="text" class="w-full border p-2 rounded h-20" placeholder="Skriv kommentar..."></textarea>
+            <div class="flex gap-3">
+                <select name="type" class="border p-2 rounded text-sm">
+                    <option value="comment">Kommentar</option>
+                    {% if role in ["admin", "support"] %}
+                    <option value="note">Intern note</option>
+                    {% endif %}
+                </select>
+                <button class="bg-green-600 text-white px-4 py-2 rounded">Send</button>
+            </div>
+        </form>
+
+        {% for c in comments|sort(attribute='created_at', reverse=True) %}
+        {% if c.type == 'system' %}
+            <div class="border-l-4 pl-4 border-gray-300 bg-gray-50 p-3 rounded">
+                <div class="text-xs text-gray-400">System · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}</div>
+                <div class="text-sm text-gray-500 italic">{{ c.text }}</div>
+            </div>
+        {% elif c.type == 'system_internal' %}
+            {% if role in ["admin", "support"] %}
+            <div class="border-l-4 pl-4 border-gray-300 bg-gray-50 p-3 rounded">
+                <div class="text-xs text-gray-400">System · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}</div>
+                <div class="text-sm text-gray-500 italic">{{ c.text }}</div>
+            </div>
             {% endif %}
-        </form>
-
-        <hr class="my-6">
-
-        <form method="POST" action="/ticket/{{ ticket.id }}/delete"
-            onsubmit="return confirm('Er du sikker på du vil slette denne ticket?');">
-
-            <button class="bg-gray-200 text-red-600 px-4 py-2 rounded hover:bg-gray-300 text-sm">
-                🗑 Slet ticket
-            </button>
-
-        </form>
-
-        <a href="/" class="inline-block mt-4 text-gray-500 hover:underline">
-            ← Tilbage til dashboard
-        </a>
+        {% else %}
+        <div class="border-l-4 pl-4
+            {% if c.type == 'note' %}border-yellow-400 bg-yellow-50{% else %}border-blue-400 bg-blue-50{% endif %}
+            p-3 rounded">
+            <div class="text-xs text-gray-500">{{ c.author_name }} · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}</div>
+            <div class="text-sm">{{ c.text }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
 
     </div>
 
 </div>
+
+{% if role in ["admin", "support"] %}
+<script>
+function setupSearch(inputId, resultsId, oidId) {
+    const input = document.getElementById(inputId);
+    const results = document.getElementById(resultsId);
+
+    if (!input || !results) return;
+
+    input.addEventListener("input", async () => {
+        const q = input.value;
+        if (q.length < 2) { results.classList.add("hidden"); return; }
+
+        try {
+            const res = await fetch(`/api/users?q=${encodeURIComponent(q)}`);
+            const users = await res.json();
+
+            results.innerHTML = "";
+            results.classList.remove("hidden");
+
+            if (users.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "p-2 text-xs text-gray-400";
+                empty.innerText = "Ingen resultater";
+                results.appendChild(empty);
+            } else {
+                users.forEach(u => {
+                    const div = document.createElement("div");
+                    div.className = "p-2 hover:bg-gray-100 cursor-pointer";
+                    div.innerText = u.name;
+                    div.onclick = () => {
+                        document.getElementById(oidId).value = u.oid;
+                        input.value = u.name;
+                        results.classList.add("hidden");
+                    };
+                    results.appendChild(div);
+                });
+            }
+        } catch {
+            results.classList.add("hidden");
+        }
+    });
+
+    input.addEventListener("change", () => {
+        document.getElementById(oidId).value = "";
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.classList.add("hidden");
+        }
+    });
+}
+
+setupSearch("requestedSearch", "requestedResults", "requested_oid");
+setupSearch("assignedSearch", "assignedResults", "assigned_oid");
+
+function setResolved() {
+    const stateSelect = document.querySelector('select[name="state"]');
+    if (stateSelect) stateSelect.value = "resolved";
+}
+</script>
+{% endif %}
 
 {% endblock %}
