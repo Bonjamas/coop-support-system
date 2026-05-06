@@ -17,17 +17,14 @@ Et simpelt internt ticket system udviklet som alternativ til ServiceNow, hvor ma
 - pip install -r requirements.txt  
 
 🔐 Opret en `.env` fil i projektets rod:
-- ENV=development
-- DATABASE_URL=postgresql://coop:coop123@localhost:5432/coop_db  
 - SECRET_KEY=devkey
+- DATABASE_URL=postgresql://coop:coop123@localhost:5432/coop_db  
 
 - CLIENT_ID=<din-client-id>
 - CLIENT_SECRET=<din-client-secret>
 - TENANT_ID=<din-tenant-id>
 
-- ADMIN_GROUP_ID=<din-admin-group-id>
-- SUPPORT_GROUP_ID=<din-support-group-id>
-- BUTIK_GROUP_ID=<din-butik-group-id> 
+- REDIRECT_URI=http://localhost:5000/auth/callback
 
 🐳 Databasen kører via Docker (PostgreSQL). Start den med:
 - docker-compose up -d  

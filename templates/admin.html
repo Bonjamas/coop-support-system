@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="text-2xl font-bold mb-6">Admin</h2>
+
+<div class="bg-white p-6 rounded-xl shadow space-y-4 max-w-md">
+
+    <div>
+        <h3 class="font-semibold mb-2">Generér testdata</h3>
+        <p class="text-sm text-gray-500 mb-3">
+            Opretter dummy-tickets hvis databasen er tom.
+        </p>
+        <form method="POST" action="{{ url_for('seed_data') }}">
+            <button class="bg-blue-600 text-white px-4 py-2 rounded text-sm">
+                Generér testdata
+            </button>
+        </form>
+    </div>
+
+    <hr>
+
+    <div>
+        <h3 class="font-semibold mb-2 text-red-700">Slet alt</h3>
+        <p class="text-sm text-gray-500 mb-3">
+            Sletter alle tickets og kommentarer permanent.
+        </p>
+        <form method="POST" action="{{ url_for('delete_all') }}"
+              onsubmit="return confirm('Er du SIKKER? Alle tickets og kommentarer slettes.')">
+            <button class="bg-red-600 text-white px-4 py-2 rounded text-sm">
+                Slet alle tickets og kommentarer
+            </button>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}

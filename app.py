@@ -1,31 +1,42 @@
-from flask import Flask, render_template, request, redirect, session
-from config import Config
-from models import db, Ticket
-from utils.decorators import db_required
-from utils.auth import build_msal_app, get_user, get_user_role
-from utils.auth_decorators import login_required, role_required
-from sqlalchemy import case
 import os
-import requests
-from utils.dummy_tickets import dummy_ticket_data
+from datetime import date
+from urllib.parse import quote
 from dotenv import load_dotenv
-from datetime import datetime, date
+from flask import Flask, abort, jsonify, redirect, render_template, request, session, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
+from config import Config
+from models import Comment, Ticket, db
+from utils.auth import GRAPH_SCOPES, build_msal_app, get_user, get_user_role, graph_get, login_required, resolve_user_name, role_required
+from utils.db import check_db_connection
+from utils.decorators import db_required
+from utils.dummy_tickets import dummy_ticket_data
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 db.init_app(app)
 
-# -----------------------
-# LOGIN
-# -----------------------
+
+REDIRECT_URI = os.getenv("REDIRECT_URI")
+
+ALLOWED_PRIORITIES = {"low", "medium", "high"}
+ALLOWED_TYPES = {"support", "funktionalitet", "nedbrud"}
+TICKETS_PER_PAGE = 25
+
+
+def _validate_choice(value, allowed, default=None):
+    return value if value in allowed else default
+
+
+# --- AUTH ---
+
 @app.route("/login")
 def login():
     auth_url = build_msal_app().get_authorization_request_url(
-        ["User.Read", "User.Read.All"],
-        redirect_uri="http://localhost:5000/auth/callback"
+        GRAPH_SCOPES,
+        redirect_uri=REDIRECT_URI,
     )
     return redirect(auth_url)
 
@@ -33,16 +44,25 @@ def login():
 @app.route("/auth/callback")
 def auth_callback():
     code = request.args.get("code")
+    if not code:
+        return "Login fejlede: manglende auth-kode.", 400
 
     result = build_msal_app().acquire_token_by_authorization_code(
         code,
-        scopes=["User.Read", "User.Read.All"],
-        redirect_uri="http://localhost:5000/auth/callback"
+        scopes=GRAPH_SCOPES,
+        redirect_uri=REDIRECT_URI,
     )
+    if "error" in result:
+        message = result.get("error_description", result["error"])
+        abort(400, f"Login fejlede: {message}")
 
-    session["user"] = result["id_token_claims"]
+    claims = result["id_token_claims"]
+    session["user"] = {
+        "oid": claims.get("oid"),
+        "name": claims.get("name"),
+        "roles": claims.get("roles", []),
+    }
     session["access_token"] = result.get("access_token")
-
     return redirect("/")
 
 
@@ -52,168 +72,179 @@ def logout():
     return redirect("/")
 
 
-# -----------------------
-# LANDING
-# -----------------------
+# --- PAGES ---
+
 @app.route("/")
-def landing():
+def index():
     if "user" in session:
         return redirect("/dashboard")
     return render_template("index.html")
 
 
-# -----------------------
-# DASHBOARD
-# -----------------------
-# 🏠 DASHBOARD (stats)
 @app.route("/dashboard")
 @db_required
 @login_required
-def home():
+def dashboard():
     role = get_user_role()
-
-    if role == "butik":
+    if role in ("butik", "user"):
         return redirect("/mine")
 
-    from datetime import date
     today = date.today()
-
     tickets = Ticket.query.all()
 
     stats = {
-        "created_today": len([t for t in tickets if t.created_at.date() == today]),
-        "resolved_today": len([t for t in tickets if t.state == "resolved" and t.updated_at.date() == today]),
-        "active": len([t for t in tickets if t.state != "resolved"]),
-        "high_priority": len([t for t in tickets if t.priority == "high"]),
-        "new": len([t for t in tickets if t.state == "new"]),
-        "in_progress": len([t for t in tickets if t.state == "in_progress"]),
-        "resolved": len([t for t in tickets if t.state == "resolved"]),
+        "created_today": sum(
+            1 for t in tickets if t.created_at.date() == today
+        ),
+        "resolved_today": sum(
+            1 for t in tickets
+            if t.state == "resolved" and t.updated_at.date() == today
+        ),
+        "active": sum(1 for t in tickets if t.state != "resolved"),
+        "high_priority": sum(1 for t in tickets if t.priority == "high"),
+        "new": sum(1 for t in tickets if t.state == "new"),
+        "in_progress": sum(1 for t in tickets if t.state == "in_progress"),
+        "resolved": sum(1 for t in tickets if t.state == "resolved"),
     }
-
     return render_template("dashboard.html", stats=stats, role=role)
 
 
-# 👤 Mine (AKTIVE)
+def _paginate(query):
+    page = request.args.get("page", 1, type=int)
+    if page < 1:
+        page = 1
+    return query.paginate(page=page, per_page=TICKETS_PER_PAGE, error_out=False)
+
+
 @app.route("/mine")
 @db_required
 @login_required
 def mine():
-    user = get_user()
-
-    tickets = Ticket.query.filter(
-        Ticket.assigned_to == user.get("oid"),
-        Ticket.state != "resolved"
-    ).order_by(Ticket.updated_at.desc()).all()
-
+    role = get_user_role()
+    pagination = _paginate(Ticket.for_user(get_user(), role, resolved=False))
     return render_template(
-        "mine.html",
-        tickets=tickets,
+        "my_tickets.html",
+        pagination=pagination,
+        tickets=pagination.items,
         title="Mine aktive tickets",
-        role=get_user_role()
+        role=role,
     )
 
 
-# ✅ Mine løste
 @app.route("/mine/resolved")
 @db_required
 @login_required
 def mine_resolved():
-    user = get_user()
-
-    tickets = Ticket.query.filter(
-        Ticket.assigned_to == user.get("oid"),
-        Ticket.state == "resolved"
-    ).order_by(Ticket.updated_at.desc()).all()
-
+    role = get_user_role()
+    pagination = _paginate(Ticket.for_user(get_user(), role, resolved=True))
     return render_template(
-        "mine.html",
-        tickets=tickets,
+        "my_tickets.html",
+        pagination=pagination,
+        tickets=pagination.items,
         title="Mine løste tickets",
-        role=get_user_role()
+        role=role,
     )
 
 
-# 👥 FÆLLES
 @app.route("/alle")
 @db_required
 @login_required
+@role_required("admin", "support")
 def alle():
-    role = get_user_role()
+    pagination = _paginate(Ticket.unassigned())
+    return render_template(
+        "ticket_list.html",
+        pagination=pagination,
+        tickets=pagination.items,
+        role=get_user_role(),
+        title="Fælles tickets",
+    )
 
-    if role == "butik":
-        return "Forbidden", 403
 
-    tickets = Ticket.query.order_by(Ticket.updated_at.desc()).all()
+@app.route("/alle/alle")
+@db_required
+@login_required
+@role_required("admin", "support")
+def alle_alle():
+    pagination = _paginate(Ticket.query.order_by(Ticket.updated_at.desc()))
+    return render_template(
+        "ticket_list.html",
+        pagination=pagination,
+        tickets=pagination.items,
+        role=get_user_role(),
+        title="Alle tickets",
+    )
 
-    return render_template("alle.html", tickets=tickets, role=role)
 
-# -----------------------
-# VIEW / UPDATE STATUS
-# -----------------------
+# --- TICKET ---
+
 @app.route("/ticket/<int:id>", methods=["GET", "POST"])
 @db_required
 @login_required
 def view_ticket(id):
     ticket = Ticket.query.get_or_404(id)
-
     role = get_user_role()
     user = get_user()
 
-    # 🔒 butik må kun se egne tickets
-    if role == "butik" and ticket.created_by != user.get("oid"):
-        return "Forbidden", 403
+    if role in ("butik", "user") and ticket.created_by != user.get("oid"):
+        abort(403)
 
     if request.method == "POST":
         action = request.form.get("action")
 
-        # ✏️ EDIT
         if action == "edit":
-            ticket.title = request.form.get("title")
+            if role not in ("admin", "support"):
+                abort(403)
+
+            title = (request.form.get("title") or "").strip()
+            if not title:
+                abort(400, "Titel er påkrævet.")
+
+            ticket.title = title
             ticket.description = request.form.get("description")
-            ticket.priority = request.form.get("priority")
-
-            # ✅ FIX: beskyt state (ingen None / ugyldige værdier)
-            state = request.form.get("state")
-            if state in ["new", "in_progress", "resolved"]:
-                ticket.state = state
-
-            assigned_to = request.form.get("assigned_to")
-            assigned_to_name = request.form.get("assigned_to_name")
-
-            if assigned_to:
-                ticket.assigned_to = assigned_to
-                ticket.assigned_to_name = assigned_to_name
-
-
-            requested_by = request.form.get("requested_by")
-            requested_by_name = request.form.get("requested_by_name")
-
-            if requested_by:
-                ticket.requested_by = requested_by
-                ticket.requested_by_name = requested_by_name
-
+            ticket.priority = _validate_choice(
+                request.form.get("priority"), ALLOWED_PRIORITIES, ticket.priority
+            )
             ticket.contact_info = request.form.get("contact_info")
-            ticket.type = request.form.get("type")
+            ticket.type = _validate_choice(
+                request.form.get("type"), ALLOWED_TYPES, ticket.type
+            )
+            ticket.update_state(
+                request.form.get("state"), user.get("name")
+            )
+            new_assigned = request.form.get("assigned_to")
+            if new_assigned and new_assigned != ticket.assigned_to:
+                new_assigned_name = resolve_user_name(new_assigned)
+            else:
+                new_assigned_name = ticket.assigned_to_name
+            ticket.update_assignment(new_assigned, new_assigned_name, user)
 
-        # 💬 COMMENT
+            new_requested = request.form.get("requested_by")
+            if new_requested and new_requested != ticket.requested_by:
+                new_requested_name = resolve_user_name(new_requested)
+            else:
+                new_requested_name = ticket.requested_by_name
+            ticket.update_requested_by(new_requested, new_requested_name)
+
+        elif action == "close":
+            if (
+                role in ("butik", "user")
+                and ticket.created_by == user.get("oid")
+            ):
+                ticket.close_by(user)
+
         elif action == "comment":
-            from models import Comment
-
-            text = request.form.get("text")
-            type_ = request.form.get("type")
-
+            text = (request.form.get("text") or "").strip()
             if text:
-                c = Comment(
-                    ticket_id=ticket.id,
-                    text=text,
-                    author_name=user.get("name"),
-                    type=type_
+                allowed = (
+                    {"comment", "note"}
+                    if role in ("admin", "support")
+                    else {"comment"}
                 )
-                db.session.add(c)
-
-                # ✅ (bevarer din tidligere intention men uden at ødelægge ting)
-                if ticket.state == "new":
-                    ticket.state = "in_progress"
+                comment_type = _validate_choice(
+                    request.form.get("type"), allowed, default="comment"
+                )
+                ticket.add_user_comment(text, comment_type, role, user)
 
         db.session.commit()
         return redirect(f"/ticket/{id}")
@@ -222,130 +253,169 @@ def view_ticket(id):
         "ticket_detail.html",
         ticket=ticket,
         comments=ticket.comments,
-        role=role
+        role=role,
+        user=user,
     )
 
 
-# -----------------------
-# ASSIGN
-# -----------------------
-@app.route("/ticket/<int:id>/assign", methods=["POST"])
-@db_required
-@login_required
-@role_required("admin", "support")
-def assign_ticket(id):
-    ticket = Ticket.query.get_or_404(id)
-
-    ticket.assigned_to = request.form.get("assigned_to")
-    ticket.assigned_to_name = request.form.get("assigned_to_name")
-
-    db.session.commit()
-
-    return redirect(f"/ticket/{id}")
-
-
-# -----------------------
-# CREATE
-# -----------------------
 @app.route("/create", methods=["GET", "POST"])
 @db_required
 @login_required
-@role_required("admin", "support", "butik")
 def create_ticket():
     user = get_user()
+    role = get_user_role()
 
     if request.method == "POST":
-        ticket = Ticket(
-            title=request.form.get("title"),
-            description=request.form.get("description"),
-            priority=request.form.get("priority"),
-            state=request.form.get("state") or "new",
+        title = (request.form.get("title") or "").strip()
+        if not title:
+            abort(400, "Titel er påkrævet.")
 
-            created_by=user["oid"],
-            created_by_name=user["name"],
-
-            requested_by=request.form.get("requested_by"),
-            requested_by_name=request.form.get("requested_by_name"),
-
-            assigned_to=request.form.get("assigned_to"),
-            assigned_to_name=request.form.get("assigned_to_name"),
+        priority = _validate_choice(
+            request.form.get("priority"), ALLOWED_PRIORITIES, default="medium"
+        )
+        ticket_type = _validate_choice(
+            request.form.get("type"), ALLOWED_TYPES, default="support"
         )
 
+        if role in ("butik", "user"):
+            requested_by = user["oid"]
+            requested_by_name = user["name"]
+            assigned_to = None
+            assigned_to_name = None
+        else:
+            requested_by = request.form.get("requested_by")
+            requested_by_name = resolve_user_name(requested_by)
+            assigned_to = request.form.get("assigned_to")
+            assigned_to_name = resolve_user_name(assigned_to)
+
+        ticket = Ticket(
+            title=title,
+            description=request.form.get("description"),
+            priority=priority,
+            state="new",
+            type=ticket_type,
+            contact_info=request.form.get("contact_info"),
+            created_by=user["oid"],
+            created_by_name=user["name"],
+            requested_by=requested_by,
+            requested_by_name=requested_by_name,
+            assigned_to=assigned_to,
+            assigned_to_name=assigned_to_name,
+        )
         db.session.add(ticket)
         db.session.commit()
-
         return redirect(f"/ticket/{ticket.id}")
 
-    return render_template("create_ticket.html")
+    return render_template("create_ticket.html", role=role)
 
-# -----------------------
-# DELETE
-# -----------------------
+
 @app.route("/ticket/<int:id>/delete", methods=["POST"])
 @db_required
 @login_required
 @role_required("admin")
 def delete_ticket(id):
     ticket = Ticket.query.get_or_404(id)
-
     db.session.delete(ticket)
     db.session.commit()
-
     return redirect("/dashboard")
 
-# -----------------------
-# API
-# -----------------------
+
+# --- API ---
+
 @app.route("/api/users")
 @login_required
+@role_required("admin", "support")
 def search_users():
-    q = request.args.get("q")
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify([])
 
-    token = session.get("access_token")
-
-    if not token:
-        return []
-
-    res = requests.get(
-        "https://graph.microsoft.com/v1.0/users?$top=50",
-        headers={
-            "Authorization": f"Bearer {token}"
-        }
+    escaped = query.replace("'", "''")
+    encoded = quote(escaped, safe="")
+    url = (
+        "https://graph.microsoft.com/v1.0/users"
+        f"?$filter=startswith(displayName,'{encoded}')"
+        "&$select=id,displayName,mail,userPrincipalName"
+        "&$top=10"
     )
 
-    data = res.json()
+    data = graph_get(url)
+    if data is None:
+        return jsonify({"error": "graph_unavailable"}), 502
 
-    users = [
+    return jsonify([
         {
             "name": u.get("displayName"),
             "email": u.get("mail") or u.get("userPrincipalName"),
-            "oid": u.get("id")
+            "oid": u.get("id"),
         }
         for u in data.get("value", [])
-        if q.lower() in (u.get("displayName") or "").lower()
-    ]
+        if u.get("displayName")
+    ])
 
-    return users
 
-# -----------------------
-# DB ERROR
-# -----------------------
+# --- ADMIN ---
+
+@app.route("/admin")
+@db_required
+@login_required
+@role_required("admin")
+def admin_panel():
+    return render_template("admin.html", role=get_user_role())
+
+
+@app.route("/admin/testdata", methods=["POST"])
+@db_required
+@login_required
+@role_required("admin")
+def seed_data():
+    dummy_ticket_data()
+    return redirect(url_for("admin_panel"))
+
+
+@app.route("/admin/slet-alt", methods=["POST"])
+@db_required
+@login_required
+@role_required("admin")
+def delete_all():
+    Comment.query.delete()
+    Ticket.query.delete()
+    db.session.commit()
+    return redirect(url_for("admin_panel"))
+
+
+# --- ERRORS ---
+
 @app.route("/db-error")
 def db_error():
-    next_url = request.args.get("next", "/")
-    return render_template("db_error.html", next_url=next_url)
+    return render_template("db_error.html")
 
 
-# -----------------------
-# INIT
-# -----------------------
+@app.errorhandler(404)
+def not_found(_):
+    return render_template("error.html", code=404, message="Siden findes ikke."), 404
+
+
+@app.errorhandler(403)
+def forbidden(_):
+    return render_template("error.html", code=403, message="Du har ikke adgang."), 403
+
+
+@app.errorhandler(400)
+def bad_request(e):
+    msg = getattr(e, "description", "Ugyldig forespørgsel.")
+    return render_template("error.html", code=400, message=msg), 400
+
+
+@app.errorhandler(500)
+def server_error(_):
+    db.session.rollback()
+    return render_template("error.html", code=500, message="Der opstod en serverfejl."), 500
+
+
 with app.app_context():
-    from utils.db import check_db_connection
     if check_db_connection():
         db.create_all()
-
-        if os.getenv("ENV") == "development":
-            dummy_ticket_data()
 
 
 if __name__ == "__main__":

@@ -4,40 +4,30 @@
 
 <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
 
-<!-- 📊 TOP STATS -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
     <div class="bg-white p-4 rounded-xl shadow">
         <p class="text-sm text-gray-500">Oprettet i dag</p>
-        <p class="text-2xl font-bold text-blue-600">
-            {{ stats.created_today }}
-        </p>
+        <p class="text-2xl font-bold text-blue-600">{{ stats.created_today }}</p>
     </div>
 
     <div class="bg-white p-4 rounded-xl shadow">
         <p class="text-sm text-gray-500">Lukket i dag</p>
-        <p class="text-2xl font-bold text-green-600">
-            {{ stats.resolved_today }}
-        </p>
+        <p class="text-2xl font-bold text-green-600">{{ stats.resolved_today }}</p>
     </div>
 
     <div class="bg-white p-4 rounded-xl shadow">
         <p class="text-sm text-gray-500">Aktive</p>
-        <p class="text-2xl font-bold text-yellow-600">
-            {{ stats.active }}
-        </p>
+        <p class="text-2xl font-bold text-yellow-600">{{ stats.active }}</p>
     </div>
 
     <div class="bg-white p-4 rounded-xl shadow">
-        <p class="text-sm text-gray-500">High priority</p>
-        <p class="text-2xl font-bold text-red-600">
-            {{ stats.high_priority }}
-        </p>
+        <p class="text-sm text-gray-500">Høj prioritet</p>
+        <p class="text-2xl font-bold text-red-600">{{ stats.high_priority }}</p>
     </div>
 
 </div>
 
-<!-- 📊 STATE OVERVIEW -->
 <div class="bg-white p-6 rounded-xl shadow">
 
     <h3 class="font-semibold mb-4">Status overblik</h3>
@@ -46,23 +36,17 @@
 
         <div class="bg-blue-50 p-4 rounded">
             <p class="text-sm text-gray-500">Ny</p>
-            <p class="text-xl font-bold text-blue-600">
-                {{ stats.new }}
-            </p>
+            <p class="text-xl font-bold text-blue-600">{{ stats.new }}</p>
         </div>
 
         <div class="bg-yellow-50 p-4 rounded">
             <p class="text-sm text-gray-500">I gang</p>
-            <p class="text-xl font-bold text-yellow-700">
-                {{ stats.in_progress }}
-            </p>
+            <p class="text-xl font-bold text-yellow-700">{{ stats.in_progress }}</p>
         </div>
 
         <div class="bg-green-50 p-4 rounded">
             <p class="text-sm text-gray-500">Løst</p>
-            <p class="text-xl font-bold text-green-700">
-                {{ stats.resolved }}
-            </p>
+            <p class="text-xl font-bold text-green-700">{{ stats.resolved }}</p>
         </div>
 
     </div>

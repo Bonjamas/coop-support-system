@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Coop IT Support</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
 </head>
 
 <body class="bg-gray-100">
@@ -14,10 +13,8 @@
     <!-- SIDEBAR -->
     <div class="w-64 bg-gray-900 text-white flex flex-col">
 
-        <!-- LOGO -->
         <a href="/"
            class="p-4 border-b border-gray-700 flex items-center gap-2 hover:bg-gray-800 transition">
-
             <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-8">
             <span class="font-bold">Coop IT</span>
         </a>
@@ -25,46 +22,45 @@
         <!-- NAV -->
         <nav class="p-4 space-y-2">
 
-            {% if role != "butik" %}
-
-                <!-- DASHBOARD -->
+            {% if role in ["admin", "support"] %}
                 <a href="/dashboard"
                    class="block p-2 rounded hover:bg-gray-700 transition
                    {% if request.path == '/dashboard' %}bg-gray-700{% endif %}">
                     🏠 Dashboard
                 </a>
 
-                <!-- MINE -->
                 <a href="/mine"
                    class="block p-2 rounded hover:bg-gray-700 transition
                    {% if request.path.startswith('/mine') %}bg-gray-700{% endif %}">
                     👤 Mine tickets
                 </a>
 
-                <!-- FÆLLES -->
                 <a href="/alle"
                    class="block p-2 rounded hover:bg-gray-700 transition
-                   {% if request.path == '/alle' %}bg-gray-700{% endif %}">
+                   {% if request.path.startswith('/alle') %}bg-gray-700{% endif %}">
                     👥 Fælles tickets
                 </a>
-
             {% else %}
-
-                <!-- BUTIK -->
                 <a href="/mine"
                    class="block p-2 rounded hover:bg-gray-700 transition
                    {% if request.path.startswith('/mine') %}bg-gray-700{% endif %}">
-                    🎫 Mine tickets
+                    👤 Mine tickets
                 </a>
-
             {% endif %}
 
-            <!-- OPRET -->
             <a href="/create"
                class="block p-2 rounded hover:bg-gray-700 transition
                {% if request.path == '/create' %}bg-gray-700{% endif %}">
                 ➕ Opret ticket
             </a>
+
+            {% if role == "admin" %}
+            <a href="/admin"
+               class="block p-2 rounded hover:bg-gray-700 transition
+               {% if request.path.startswith('/admin') %}bg-gray-700{% endif %}">
+                ⚙️ Admin
+            </a>
+            {% endif %}
 
         </nav>
 
@@ -80,23 +76,15 @@
 
             {% if session.user %}
             <div class="flex items-center gap-4">
-                <span class="text-sm text-gray-600">
-                    {{ session.user.name }}
-                </span>
-
+                <span class="text-sm text-gray-600">{{ session.user.name }}</span>
                 <span class="text-xs text-gray-400">
-                    ({{ role }})
+                    ({% if role == "admin" %}Administrator{% elif role == "support" %}Support{% elif role == "butik" %}Butik{% elif role == "user" %}Bruger{% endif %})
                 </span>
-
-                <a href="/logout"
-                   class="text-sm text-red-600 hover:underline">
-                    Logout
-                </a>
+                <a href="/logout" class="text-sm text-red-600 hover:underline">Log ud</a>
             </div>
             {% else %}
-            <a href="/login"
-               class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm">
-                Login
+            <a href="/login" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm">
+                Log ind
             </a>
             {% endif %}
 
