@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask import Flask, abort, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
-from models import Comment, Ticket, db
+from models import Ticket, db
 from utils.auth import GRAPH_SCOPES, build_msal_app, get_user, get_user_role, graph_get, login_required, resolve_user_name, role_required
 from utils.db import check_db_connection
 from utils.decorators import db_required
@@ -379,7 +379,6 @@ def seed_data():
 @login_required
 @role_required("admin")
 def delete_all():
-    Comment.query.delete()
     Ticket.query.delete()
     db.session.commit()
     return redirect(url_for("admin_panel"))

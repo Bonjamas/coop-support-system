@@ -1,10 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
 END_USER_ROLES = ("butik", "user")
+
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 
 
 class Ticket(db.Model):
@@ -14,40 +18,33 @@ class Ticket(db.Model):
         "resolved": "Løst",
     }
 
+    # --- COLUMNS ---
     id = db.Column(db.Integer, primary_key=True)
 
-    title = db.Column(db.String(200))
+    title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
 
-    priority = db.Column(db.String(20), default="medium")
-    state = db.Column(db.String(20), default="new")
+    priority = db.Column(db.String(20), default="medium", nullable=False)
+    state = db.Column(db.String(20), default="new", nullable=False, index=True)
 
-    created_by = db.Column(db.String(100))
-    created_by_name = db.Column(db.String(100))
+    created_by = db.Column(db.String(100), nullable=False, index=True)
+    created_by_name = db.Column(db.String(100), nullable=False)
 
-    requested_by = db.Column(db.String(100))
-    requested_by_name = db.Column(db.String(100))
+    requested_by = db.Column(db.String(100), nullable=False)
+    requested_by_name = db.Column(db.String(100), nullable=False)
 
-    assigned_to = db.Column(db.String(100))
+    assigned_to = db.Column(db.String(100), index=True)
     assigned_to_name = db.Column(db.String(100))
 
     contact_info = db.Column(db.String(100))
     type = db.Column(db.String(50))
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-    )
+    created_at = db.Column(db.DateTime, default=_utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=_utcnow, onupdate=_utcnow, nullable=False)
 
-    comments = db.relationship(
-        "Comment",
-        backref="ticket",
-        lazy=True,
-        cascade="all, delete",
-    )
+    comments = db.relationship("Comment", backref="ticket", lazy=True, cascade="all, delete-orphan", passive_deletes=True)
 
+    # --- QUERIES ---
     @classmethod
     def for_user(cls, user, role, resolved=False):
         owner_field = (
@@ -71,6 +68,7 @@ class Ticket(db.Model):
             .order_by(cls.updated_at.desc())
         )
 
+    # --- MUTATIONS ---
     def update_state(self, new_state, actor_name):
         if new_state not in self.STATE_LABELS or new_state == self.state:
             return
@@ -132,9 +130,13 @@ class Ticket(db.Model):
 
 
 class Comment(db.Model):
+    # --- COLUMNS ---
     id = db.Column(db.Integer, primary_key=True)
     ticket_id = db.Column(
-        db.Integer, db.ForeignKey("ticket.id"), nullable=False
+        db.Integer,
+        db.ForeignKey("ticket.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
 
     text = db.Column(db.Text, nullable=False)
@@ -142,8 +144,9 @@ class Comment(db.Model):
     author_name = db.Column(db.String(100))
     type = db.Column(db.String(20))
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow, nullable=False)
 
+    # --- FACTORIES ---
     @classmethod
     def system(cls, ticket_id, text):
         return cls(
