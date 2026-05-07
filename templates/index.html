@@ -29,24 +29,10 @@
 
         <div class="flex flex-col sm:flex-row gap-4">
 
-            {% if session.user %}
-                <a href="/dashboard"
-                   class="bg-red-600 px-6 py-3 rounded text-white font-semibold hover:bg-red-700 transition">
-                    Åbn dashboard
-                </a>
-                <a href="/logout"
-                   class="bg-white/10 px-6 py-3 rounded text-white border border-white/30 hover:bg-white/20 transition">
-                    Log ud
-                </a>
-                <div class="text-sm text-gray-300 mt-4">
-                    Logget ind som <span class="font-semibold">{{ session.user.name }}</span>
-                </div>
-            {% else %}
-                <a href="/login"
-                   class="bg-red-600 px-6 py-3 rounded text-white font-semibold hover:bg-red-700 transition">
-                    Login med Microsoft
-                </a>
-            {% endif %}
+            <a href="/login"
+               class="bg-red-600 px-6 py-3 rounded text-white font-semibold hover:bg-red-700 transition">
+                Login med Microsoft
+            </a>
 
         </div>
 

@@ -45,7 +45,7 @@ def login():
 def auth_callback():
     code = request.args.get("code")
     if not code:
-        return "Login fejlede: manglende auth-kode.", 400
+        abort(400, "Login fejlede: manglende auth-kode.")
 
     result = build_msal_app().acquire_token_by_authorization_code(
         code,
@@ -227,11 +227,9 @@ def view_ticket(id):
             ticket.update_requested_by(new_requested, new_requested_name)
 
         elif action == "close":
-            if (
-                role in ("butik", "user")
-                and ticket.created_by == user.get("oid")
-            ):
-                ticket.close_by(user)
+            if role not in ("butik", "user") or ticket.created_by != user.get("oid"):
+                abort(403)
+            ticket.close_by(user)
 
         elif action == "comment":
             text = (request.form.get("text") or "").strip()
@@ -246,15 +244,16 @@ def view_ticket(id):
                 )
                 ticket.add_user_comment(text, comment_type, role, user)
 
+        else:
+            abort(400, "Ugyldig handling.")
+
         db.session.commit()
         return redirect(f"/ticket/{id}")
 
     return render_template(
         "ticket_detail.html",
         ticket=ticket,
-        comments=ticket.comments,
         role=role,
-        user=user,
     )
 
 
@@ -284,6 +283,8 @@ def create_ticket():
             assigned_to_name = None
         else:
             requested_by = request.form.get("requested_by")
+            if not requested_by:
+                abort(400, "Anmodet af er påkrævet.")
             requested_by_name = resolve_user_name(requested_by)
             assigned_to = request.form.get("assigned_to")
             assigned_to_name = resolve_user_name(assigned_to)
