@@ -26,10 +26,6 @@ ALLOWED_TYPES = {"support", "funktionalitet", "nedbrud"}
 TICKETS_PER_PAGE = 25
 
 
-def _validate_choice(value, allowed, default=None):
-    return value if value in allowed else default
-
-
 # --- AUTH ---
 
 @app.route("/login")
@@ -202,13 +198,11 @@ def view_ticket(id):
 
             ticket.title = title
             ticket.description = request.form.get("description")
-            ticket.priority = _validate_choice(
-                request.form.get("priority"), ALLOWED_PRIORITIES, ticket.priority
-            )
+            if (priority := request.form.get("priority")) in ALLOWED_PRIORITIES:
+                ticket.priority = priority
             ticket.contact_info = request.form.get("contact_info")
-            ticket.type = _validate_choice(
-                request.form.get("type"), ALLOWED_TYPES, ticket.type
-            )
+            if (ticket_type := request.form.get("type")) in ALLOWED_TYPES:
+                ticket.type = ticket_type
             ticket.update_state(
                 request.form.get("state"), user.get("name")
             )
@@ -239,9 +233,9 @@ def view_ticket(id):
                     if role in ("admin", "support")
                     else {"comment"}
                 )
-                comment_type = _validate_choice(
-                    request.form.get("type"), allowed, default="comment"
-                )
+                comment_type = request.form.get("type")
+                if comment_type not in allowed:
+                    comment_type = "comment"
                 ticket.add_user_comment(text, comment_type, role, user)
 
         else:
@@ -269,12 +263,12 @@ def create_ticket():
         if not title:
             abort(400, "Titel er påkrævet.")
 
-        priority = _validate_choice(
-            request.form.get("priority"), ALLOWED_PRIORITIES, default="medium"
-        )
-        ticket_type = _validate_choice(
-            request.form.get("type"), ALLOWED_TYPES, default="support"
-        )
+        priority = request.form.get("priority")
+        if priority not in ALLOWED_PRIORITIES:
+            priority = "medium"
+        ticket_type = request.form.get("type")
+        if ticket_type not in ALLOWED_TYPES:
+            ticket_type = "support"
 
         if role in ("butik", "user"):
             requested_by = user["oid"]
