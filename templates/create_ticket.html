@@ -2,36 +2,155 @@
 
 {% block content %}
 
-<div class="w-full">
+<h2 class="text-xl font-semibold mb-4">Opret ticket</h2>
 
-    <div class="bg-white p-6 rounded shadow">
+<form method="POST" id="createForm" class="space-y-6">
 
-        <h2 class="text-xl font-bold mb-4">Opret ticket</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <form method="POST" class="space-y-4">
+        <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
-            <input name="title" placeholder="Titel"
-                   class="w-full border p-2 rounded" required>
+            <div>
+                {% if role not in ["admin", "support"] %}
+                <label class="text-xs text-gray-500">Anmodet af</label>
+                <input value="{{ session.user.name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
+                {% else %}
+                <label class="text-xs text-gray-500">Anmodet af *</label>
+                <input id="requestedSearch" class="w-full border p-2 rounded">
+                <div id="requestedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
+                <input type="hidden" name="requested_by" id="requested_oid">
+                {% endif %}
+            </div>
 
-            <textarea name="description"
-                      class="w-full border p-2 rounded"
-                      placeholder="Beskrivelse"></textarea>
+            <div>
+                <label class="text-xs text-gray-500">Kontakt info *</label>
+                <input name="contact_info" required class="w-full border p-2 rounded">
+            </div>
 
-            <select name="priority"
-                    class="w-full border p-2 rounded">
-                <option value="low">Lav</option>
-                <option value="medium" selected>Mellem</option>
-                <option value="high">Høj</option>
-            </select>
+            <div>
+                <label class="text-xs text-gray-500">Type *</label>
+                <select name="type" required class="w-full border p-2 rounded">
+                    <option value="support" selected>Brugersupport</option>
+                    <option value="funktionalitet">Funktionalitet</option>
+                    <option value="nedbrud">Nedbrud</option>
+                </select>
+            </div>
 
-            <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-                Opret
-            </button>
+            <div>
+                <label class="text-xs text-gray-500">Prioritet *</label>
+                <select name="priority" required class="w-full border p-2 rounded">
+                    <option value="low">Lav</option>
+                    <option value="medium" selected>Mellem</option>
+                    <option value="high">Høj</option>
+                </select>
+            </div>
 
-        </form>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow space-y-4">
+
+            <div>
+                <label class="text-xs text-gray-500">Tilstand</label>
+                <input value="Ny" class="w-full border p-2 rounded bg-gray-100" disabled>
+            </div>
+
+            {% if role in ["admin", "support"] %}
+            <div>
+                <label class="text-xs text-gray-500">Tildelt til</label>
+                <input id="assignedSearch" class="w-full border p-2 rounded">
+                <div id="assignedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
+                <input type="hidden" name="assigned_to" id="assigned_oid">
+            </div>
+            {% endif %}
+
+            <div>
+                <label class="text-xs text-gray-500">Oprettet af</label>
+                <input value="{{ session.user.name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
+            </div>
+
+        </div>
 
     </div>
 
-</div>
+    <div class="bg-white p-6 rounded-xl shadow space-y-4">
+
+        <div>
+            <label class="text-xs text-gray-500">Titel *</label>
+            <input name="title" required class="w-full border p-2 rounded">
+        </div>
+
+        <div>
+            <label class="text-xs text-gray-500">Beskrivelse</label>
+            <textarea name="description" class="w-full border p-2 rounded h-32"></textarea>
+        </div>
+
+        <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded">
+            Opret ticket
+        </button>
+
+    </div>
+
+</form>
+
+<script>
+function setupSearch(inputId, resultsId, oidId) {
+    const input = document.getElementById(inputId);
+    const results = document.getElementById(resultsId);
+
+    if (!input || !results) return;
+
+    input.addEventListener("input", async () => {
+        const q = input.value;
+        if (q.length < 2) { results.classList.add("hidden"); return; }
+
+        try {
+            const res = await fetch(`/api/users?q=${encodeURIComponent(q)}`);
+            const users = await res.json();
+
+            results.innerHTML = "";
+            results.classList.remove("hidden");
+
+            if (users.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "p-2 text-xs text-gray-400";
+                empty.innerText = "Ingen resultater";
+                results.appendChild(empty);
+            } else {
+                users.forEach(u => {
+                    const div = document.createElement("div");
+                    div.className = "p-2 hover:bg-gray-100 cursor-pointer";
+                    div.innerText = u.name;
+                    div.onclick = () => {
+                        document.getElementById(oidId).value = u.oid;
+                        input.value = u.name;
+                        results.classList.add("hidden");
+                    };
+                    results.appendChild(div);
+                });
+            }
+        } catch {
+            results.classList.add("hidden");
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.classList.add("hidden");
+        }
+    });
+}
+
+setupSearch("requestedSearch", "requestedResults", "requested_oid");
+setupSearch("assignedSearch", "assignedResults", "assigned_oid");
+
+{% if role in ["admin", "support"] %}
+document.getElementById('createForm').addEventListener('submit', function(e) {
+    if (!document.getElementById('requested_oid').value) {
+        alert('Vælg en person under "Anmodet af"');
+        e.preventDefault();
+    }
+});
+{% endif %}
+</script>
 
 {% endblock %}

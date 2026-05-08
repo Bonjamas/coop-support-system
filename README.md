@@ -1,6 +1,6 @@
 # 🛠️ Coop IT Support System
 
-Et simpelt internt ticket system udviklet som alternativ til ServiceNow, hvor man kan oprette og håndtere support tickets med fokus på lavere omkostninger og fuld kontrol over data.
+Et simpelt internt ticket system udviklet som alternativ til ServiceNow, hvor man kan oprette og håndtere support tickets.
 
 🚀 Brug lokalt:
 - git clone https://github.com/Bonjamas/coop-support-system.git
@@ -17,8 +17,14 @@ Et simpelt internt ticket system udviklet som alternativ til ServiceNow, hvor ma
 - pip install -r requirements.txt  
 
 🔐 Opret en `.env` fil i projektets rod:
+- SECRET_KEY=devkey
 - DATABASE_URL=postgresql://coop:coop123@localhost:5432/coop_db  
-- SECRET_KEY=devkey  
+
+- CLIENT_ID=<din-client-id>
+- CLIENT_SECRET=<din-client-secret>
+- TENANT_ID=<din-tenant-id>
+
+- REDIRECT_URI=http://localhost:5000/auth/callback
 
 🐳 Databasen kører via Docker (PostgreSQL). Start den med:
 - docker-compose up -d  
@@ -42,3 +48,4 @@ Et simpelt internt ticket system udviklet som alternativ til ServiceNow, hvor ma
 💡 Vigtigt at vide:
 - Databasen kører i Docker, mens applikationen kører lokalt i Flask  
 - Der bruges ikke migrations, så ændringer i database struktur kræver reset af Docker volume  
+- Det kræver de rigtige entra id oplysninger for at hjemmeside virker.
