@@ -77,7 +77,7 @@
             <div class="flex items-center gap-4">
                 <span class="text-sm text-gray-600">{{ session.user.name }}</span>
                 <span class="text-xs text-gray-400">
-                    ({% if role == "admin" %}Administrator{% elif role == "support" %}Support{% elif role == "butik" %}Butik{% elif role == "user" %}Bruger{% endif %})
+                    ({% if role == "admin" %}Administrator{% elif role == "support" %}Support{% elif role == "butik" %}Butik{% elif role == "user" %}Bruger{% endif %}{% if session.user.store_names %} · {{ session.user.store_names | join(', ') }}{% endif %})
                 </span>
                 <a href="/logout" class="text-sm text-red-600 hover:underline">Log ud</a>
             </div>

@@ -1,9 +1,7 @@
 import os
-from functools import wraps
 
 import msal
-import requests
-from flask import abort, redirect, session
+from flask import session
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -14,6 +12,18 @@ GRAPH_SCOPES = ["User.ReadBasic.All"]
 
 ROLE_PRIORITY = ("admin", "support", "butik")
 DEFAULT_ROLE = "user"
+
+STORE_GROUPS = {
+    "a7a43b4f-7c34-49a1-a945-6d7b8bd42a42": "karlslunde",
+    "6920351e-e813-428a-8c8a-9263a80a9129": "greve",
+    "6eff9713-19a7-4aaf-8768-1fa9d76a3589": "hvidovre",
+}
+
+STORE_NAMES = {
+    "karlslunde": "SuperBrugsen Karlslunde",
+    "greve":      "365discount Greve",
+    "hvidovre":   "Kvickly Hvidovre",
+}
 
 
 def build_msal_app():
@@ -37,52 +47,15 @@ def get_user_role():
     return DEFAULT_ROLE
 
 
-def login_required(view):
-    @wraps(view)
-    def wrapper(*args, **kwargs):
-        if "user" not in session:
-            return redirect("/login")
-        return view(*args, **kwargs)
-    return wrapper
+def get_user_stores():
+    user = get_user() or {}
+    return user.get("stores", [])
 
 
-def graph_get(url):
-    token = session.get("access_token")
-    if not token:
-        return None
-
-    try:
-        response = requests.get(
-            url,
-            headers={"Authorization": f"Bearer {token}"},
-            timeout=5,
-        )
-    except requests.RequestException:
-        return None
-
-    if not response.ok:
-        return None
-
-    return response.json()
+def stores_from_claims(claims):
+    raw_groups = claims.get("groups") or []
+    return [STORE_GROUPS[g] for g in raw_groups if g in STORE_GROUPS]
 
 
-def resolve_user_name(oid):
-    if not oid:
-        return None
-    data = graph_get(
-        f"https://graph.microsoft.com/v1.0/users/{oid}?$select=displayName"
-    )
-    if not data:
-        return None
-    return data.get("displayName")
-
-
-def role_required(*allowed_roles):
-    def decorator(view):
-        @wraps(view)
-        def wrapper(*args, **kwargs):
-            if get_user_role() not in allowed_roles:
-                abort(403)
-            return view(*args, **kwargs)
-        return wrapper
-    return decorator
+def store_names_from_claims(claims):
+    return [STORE_NAMES[slug] for slug in stores_from_claims(claims)]

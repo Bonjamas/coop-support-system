@@ -74,8 +74,8 @@ class Ticket(db.Model):
             return
         label = self.STATE_LABELS[new_state]
         db.session.add(Comment.system_internal(
-            self.id,
             f'Tilstand ændret til "{label}" af {actor_name}.',
+            ticket_id=self.id,
         ))
         self.state = new_state
 
@@ -88,18 +88,18 @@ class Ticket(db.Model):
             self.assigned_to_name = new_name
             if new_oid != previous_oid:
                 db.session.add(Comment.system(
-                    self.id, f"Tildelt til {new_name}."
+                    f"Tildelt til {new_name}.", ticket_id=self.id
                 ))
         elif not previous_oid:
             self.assigned_to = current_user.get("oid")
             self.assigned_to_name = current_user.get("name")
             db.session.add(Comment.system(
-                self.id, f"Tildelt til {self.assigned_to_name}."
+                f"Tildelt til {self.assigned_to_name}.", ticket_id=self.id
             ))
         else:
             self.assigned_to = None
             self.assigned_to_name = None
-            db.session.add(Comment.system(self.id, "Tildeling fjernet."))
+            db.session.add(Comment.system("Tildeling fjernet.", ticket_id=self.id))
 
     def update_requested_by(self, new_oid, new_name):
         if new_oid:
@@ -109,7 +109,7 @@ class Ticket(db.Model):
     def close_by(self, user):
         self.state = "resolved"
         db.session.add(Comment.system(
-            self.id, f"Ticket lukket af {user.get('name')}."
+            f"Ticket lukket af {user.get('name')}.", ticket_id=self.id
         ))
 
     def add_user_comment(self, text, comment_type, role, user):
@@ -123,7 +123,7 @@ class Ticket(db.Model):
         if role in END_USER_ROLES and self.state == "resolved":
             self.state = "in_progress"
             db.session.add(Comment.system(
-                self.id, f"Ticket genåbnet af {user.get('name')}."
+                f"Ticket genåbnet af {user.get('name')}.", ticket_id=self.id
             ))
         elif self.state == "new":
             self.state = "in_progress"
@@ -148,7 +148,7 @@ class Comment(db.Model):
 
     # --- FACTORIES ---
     @classmethod
-    def system(cls, ticket_id, text):
+    def system(cls, text, ticket_id=None):
         return cls(
             ticket_id=ticket_id,
             text=text,
@@ -157,7 +157,7 @@ class Comment(db.Model):
         )
 
     @classmethod
-    def system_internal(cls, ticket_id, text):
+    def system_internal(cls, text, ticket_id=None):
         return cls(
             ticket_id=ticket_id,
             text=text,
