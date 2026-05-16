@@ -2,14 +2,19 @@
 
 {% block content %}
 
+<!-- "Opret ticket"-siden. Felterne afhænger af brugerens rolle. JS: create_ticket.js (kun admin/support) -->
+
 <h2 class="text-xl font-semibold mb-4">Opret ticket</h2>
 
 <form method="POST" id="createForm" class="space-y-6">
 
+    <!-- ===================== To kolonner: hvem/hvad ===================== -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+        <!-- Venstre kolonne -->
         <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
+            <!-- Anmodet af: almindelige brugere er låst til sig selv, admin/support kan vælge en anden -->
             <div>
                 {% if role not in ["admin", "support"] %}
                 <label class="text-xs text-gray-500">Anmodet af</label>
@@ -22,11 +27,13 @@
                 {% endif %}
             </div>
 
+            <!-- Kontaktoplysninger -->
             <div>
                 <label class="text-xs text-gray-500">Kontakt info *</label>
                 <input name="contact_info" required class="w-full border p-2 rounded">
             </div>
 
+            <!-- Type -->
             <div>
                 <label class="text-xs text-gray-500">Type *</label>
                 <select name="type" required class="w-full border p-2 rounded">
@@ -36,6 +43,7 @@
                 </select>
             </div>
 
+            <!-- Prioritet -->
             <div>
                 <label class="text-xs text-gray-500">Prioritet *</label>
                 <select name="priority" required class="w-full border p-2 rounded">
@@ -47,13 +55,16 @@
 
         </div>
 
+        <!-- Højre kolonne -->
         <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
+            <!-- Tilstand: en ny ticket starter altid som "Ny" -->
             <div>
                 <label class="text-xs text-gray-500">Tilstand</label>
                 <input value="Ny" class="w-full border p-2 rounded bg-gray-100" disabled>
             </div>
 
+            <!-- Kun admin/support kan tildele en ticket fra start -->
             {% if role in ["admin", "support"] %}
             <div>
                 <label class="text-xs text-gray-500">Tildelt til</label>
@@ -63,6 +74,7 @@
             </div>
             {% endif %}
 
+            <!-- Oprettet af: altid den indloggede bruger -->
             <div>
                 <label class="text-xs text-gray-500">Oprettet af</label>
                 <input value="{{ session.user.name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
@@ -72,6 +84,7 @@
 
     </div>
 
+    <!-- ===================== Titel + beskrivelse + opret-knap ===================== -->
     <div class="bg-white p-6 rounded-xl shadow space-y-4">
 
         <div>
@@ -92,65 +105,9 @@
 
 </form>
 
-<script>
-function setupSearch(inputId, resultsId, oidId) {
-    const input = document.getElementById(inputId);
-    const results = document.getElementById(resultsId);
-
-    if (!input || !results) return;
-
-    input.addEventListener("input", async () => {
-        const q = input.value;
-        if (q.length < 2) { results.classList.add("hidden"); return; }
-
-        try {
-            const res = await fetch(`/api/users?q=${encodeURIComponent(q)}`);
-            const users = await res.json();
-
-            results.innerHTML = "";
-            results.classList.remove("hidden");
-
-            if (users.length === 0) {
-                const empty = document.createElement("div");
-                empty.className = "p-2 text-xs text-gray-400";
-                empty.innerText = "Ingen resultater";
-                results.appendChild(empty);
-            } else {
-                users.forEach(u => {
-                    const div = document.createElement("div");
-                    div.className = "p-2 hover:bg-gray-100 cursor-pointer";
-                    div.innerText = u.name;
-                    div.onclick = () => {
-                        document.getElementById(oidId).value = u.oid;
-                        input.value = u.name;
-                        results.classList.add("hidden");
-                    };
-                    results.appendChild(div);
-                });
-            }
-        } catch {
-            results.classList.add("hidden");
-        }
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!input.contains(e.target) && !results.contains(e.target)) {
-            results.classList.add("hidden");
-        }
-    });
-}
-
-setupSearch("requestedSearch", "requestedResults", "requested_oid");
-setupSearch("assignedSearch", "assignedResults", "assigned_oid");
-
+<!-- JS til bruger-søgning + submit-validering — kun nødvendig for admin/support -->
 {% if role in ["admin", "support"] %}
-document.getElementById('createForm').addEventListener('submit', function(e) {
-    if (!document.getElementById('requested_oid').value) {
-        alert('Vælg en person under "Anmodet af"');
-        e.preventDefault();
-    }
-});
+<script src="{{ url_for('static', filename='js/create_ticket.js') }}"></script>
 {% endif %}
-</script>
 
 {% endblock %}

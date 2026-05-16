@@ -8,21 +8,31 @@
 
 <body class="bg-gray-100">
 
+<!--
+    Layout-skabelon som alle "logget ind"-sider arver fra.
+    Struktur:
+        [ Sidebar ][ Topbar      ]
+        [        ][ Indhold      ]
+        [        ][ Footer       ]
+    Indhold injectes via {% block content %} i de enkelte templates.
+-->
 <div class="flex h-screen">
 
-    <!-- SIDEBAR -->
+    <!-- ===================== SIDEBAR (venstre menu) ===================== -->
     <div class="w-64 bg-gray-900 text-white flex flex-col">
 
+        <!-- Logo + navn øverst, klikker tilbage til forsiden -->
         <a href="/"
            class="p-4 border-b border-gray-700 flex items-center gap-2 hover:bg-gray-800 transition">
             <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-8">
             <span class="font-bold">Coop IT</span>
         </a>
 
-        <!-- NAV -->
+        <!-- Navigation. Hvilke links der vises afhænger af brugerens rolle. -->
         <nav class="p-4 space-y-2">
 
             {% if role in ["admin", "support"] %}
+                <!-- Admin og support kan se Dashboard + Mine + Fælles tickets -->
                 <a href="/dashboard"
                    class="block p-2 rounded hover:bg-gray-700 transition
                    {% if request.path == '/dashboard' %}bg-gray-700{% endif %}">
@@ -41,6 +51,7 @@
                     👥 Fælles tickets
                 </a>
             {% else %}
+                <!-- Almindelige brugere/butik ser kun deres egne tickets -->
                 <a href="/mine"
                    class="block p-2 rounded hover:bg-gray-700 transition
                    {% if request.path.startswith('/mine') %}bg-gray-700{% endif %}">
@@ -48,12 +59,14 @@
                 </a>
             {% endif %}
 
+            <!-- Alle roller kan oprette en ticket -->
             <a href="/create"
                class="block p-2 rounded hover:bg-gray-700 transition
                {% if request.path == '/create' %}bg-gray-700{% endif %}">
                 ➕ Opret ticket
             </a>
 
+            <!-- Kun admin ser admin-siden -->
             {% if role == "admin" %}
             <a href="/admin"
                class="block p-2 rounded hover:bg-gray-700 transition
@@ -66,10 +79,10 @@
 
     </div>
 
-    <!-- MAIN -->
+    <!-- ===================== HOVEDOMRÅDE (højre side) ===================== -->
     <div class="flex-1 flex flex-col">
 
-        <!-- TOPBAR -->
+        <!-- Topbar: titel, brugernavn, rolle, butik(ker), log ud -->
         <div class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
             <h1 class="text-xl font-semibold">IT Support System</h1>
@@ -84,12 +97,12 @@
 
         </div>
 
-        <!-- CONTENT -->
+        <!-- Selve sidens indhold — udfyldes af den enkelte template -->
         <div class="p-6 overflow-y-auto flex-1">
             {% block content %}{% endblock %}
         </div>
 
-        <!-- FOOTER -->
+        <!-- Footer -->
         <div class="bg-white border-t px-6 py-2 text-right text-xs text-gray-400">
             Udviklet af Benjamin L. Pedersen
         </div>
@@ -97,6 +110,9 @@
     </div>
 
 </div>
+
+<!-- Fælles JS-hjælpere (tabel-sortering, søgning, slet-confirm, setupSearch) -->
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
 
 </body>
 </html>

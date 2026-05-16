@@ -7,7 +7,7 @@ errors_bp = Blueprint("errors", __name__)
 
 @errors_bp.route("/db-error")
 def db_error():
-    return render_template("db_error.html")
+    return render_template("error.html", variant="db")
 
 
 @errors_bp.app_errorhandler(404)
