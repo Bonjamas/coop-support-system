@@ -13,9 +13,9 @@ TICKETS = [
         "type": "support",
         "contact": "mette.hansen@coop.dk",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "comment", "udfører": "mette", "text": "Jeg har ikke ændret noget — det virkede fint i går."},
-            {"event_type": "note", "udfører": "support1", "text": "Din bruger mangler rettighed til vagtplan-modulet. Tilføjer nu."},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "comment", "actor": "mette", "text": "Jeg har ikke ændret noget — det virkede fint i går."},
+            {"event_type": "note", "actor": "support1", "text": "Din bruger mangler rettighed til vagtplan-modulet. Tilføjer nu."},
         ],
     },
 ]

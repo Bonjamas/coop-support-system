@@ -1,13 +1,15 @@
 from flask import Blueprint, render_template
+from sqlalchemy.exc import OperationalError
 
 from models import db
 
 errors_bp = Blueprint("errors", __name__)
 
 
-@errors_bp.route("/db-error")
-def db_error():
-    return render_template("error.html", variant="db")
+@errors_bp.app_errorhandler(OperationalError)
+def db_down(_):
+    db.session.rollback()
+    return render_template("error.html", variant="db"), 503
 
 
 @errors_bp.app_errorhandler(404)

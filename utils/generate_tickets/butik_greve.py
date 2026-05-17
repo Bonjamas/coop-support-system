@@ -13,10 +13,10 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "Kommunikationsfejl 51 er typisk en netværksfejl mod PBS. Tjekker forbindelsen nu."},
-            {"event_type": "comment", "udfører": "greve", "text": "Problemet opstod lige efter morgenåbning kl. 07:00."},
-            {"event_type": "note", "udfører": "support1", "text": "Bekræftet: TLS-forbindelsen til PBS gateway fejler. Eskalerer til netværksteamet."},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "Kommunikationsfejl 51 er typisk en netværksfejl mod PBS. Tjekker forbindelsen nu."},
+            {"event_type": "comment", "actor": "greve", "text": "Problemet opstod lige efter morgenåbning kl. 07:00."},
+            {"event_type": "note", "actor": "support1", "text": "Bekræftet: TLS-forbindelsen til PBS gateway fejler. Eskalerer til netværksteamet."},
         ],
     },
     {
@@ -26,10 +26,10 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "Crashet er sandsynligvis relateret til en bestemt varekategori. Beder dem teste med en specifik vare."},
-            {"event_type": "comment", "udfører": "greve", "text": "Det sker hver gang vi scanner noget fra frysevarer kategori 'Frost-B'. Andre kategorier virker."},
-            {"event_type": "note", "udfører": "support1", "text": "Reproduceret fejlen. Ser ud til at være et korrupt produktID i databasen. Undersøger."},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "Crashet er sandsynligvis relateret til en bestemt varekategori. Beder dem teste med en specifik vare."},
+            {"event_type": "comment", "actor": "greve", "text": "Det sker hver gang vi scanner noget fra frysevarer kategori 'Frost-B'. Andre kategorier virker."},
+            {"event_type": "note", "actor": "support1", "text": "Reproduceret fejlen. Ser ud til at være et korrupt produktID i databasen. Undersøger."},
         ],
     },
     {
@@ -39,11 +39,11 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Router logger viser at WAN-forbindelsen droppede kl. 08:13. Kontakter ISP nu."},
-            {"event_type": "comment", "udfører": "greve", "text": "Vi har 3 kasser der ikke kan gennemføre kortbetalinger. Hvornår er det oppe?"},
-            {"event_type": "note", "udfører": "support2", "text": "ISP bekræfter fejl på linje. Estimeret rettelsetid: 2 timer."},
-            {"event_type": "comment", "udfører": "greve", "text": "Okay — vi kører kontant og offline-mode indtil videre."},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Router logger viser at WAN-forbindelsen droppede kl. 08:13. Kontakter ISP nu."},
+            {"event_type": "comment", "actor": "greve", "text": "Vi har 3 kasser der ikke kan gennemføre kortbetalinger. Hvornår er det oppe?"},
+            {"event_type": "note", "actor": "support2", "text": "ISP bekræfter fejl på linje. Estimeret rettelsetid: 2 timer."},
+            {"event_type": "comment", "actor": "greve", "text": "Okay — vi kører kontant og offline-mode indtil videre."},
         ],
     },
     {
@@ -53,10 +53,10 @@ TICKETS = [
         "type": "support",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Printerhovedet er sandsynligvis forskudt. Beder dem tjekke om papiret er sat rigtigt i."},
-            {"event_type": "comment", "udfører": "greve", "text": "Papiret sidder korrekt. Problemet er det samme med en helt ny rulle."},
-            {"event_type": "note", "udfører": "support2", "text": "Kan se i loggen at printeren rapporterer en fejljustering. Sender vejledning til manuel kalibrering."},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Printerhovedet er sandsynligvis forskudt. Beder dem tjekke om papiret er sat rigtigt i."},
+            {"event_type": "comment", "actor": "greve", "text": "Papiret sidder korrekt. Problemet er det samme med en helt ny rulle."},
+            {"event_type": "note", "actor": "support2", "text": "Kan se i loggen at printeren rapporterer en fejljustering. Sender vejledning til manuel kalibrering."},
         ],
     },
     {
@@ -82,9 +82,9 @@ TICKETS = [
         "type": "support",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "PIN nulstillet via admin-konsol. Ny midlertidig PIN sendt til butikschef."},
-            {"event_type": "resolve", "udfører": "support1"},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "PIN nulstillet via admin-konsol. Ny midlertidig PIN sendt til butikschef."},
+            {"event_type": "resolve", "actor": "support1"},
         ],
     },
     {
@@ -94,10 +94,10 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Kendt bug i firmware 3.1.4. Opdaterer til 3.1.6."},
-            {"event_type": "comment", "udfører": "greve", "text": "Perfekt — den fungerer normalt nu."},
-            {"event_type": "resolve", "udfører": "support2"},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Kendt bug i firmware 3.1.4. Opdaterer til 3.1.6."},
+            {"event_type": "comment", "actor": "greve", "text": "Perfekt — den fungerer normalt nu."},
+            {"event_type": "resolve", "actor": "support2"},
         ],
     },
     {
@@ -107,10 +107,10 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "comment", "udfører": "greve", "text": "Vægten har stået ude ved siden af en varmelampe — ved ikke om det har noget at sige."},
-            {"event_type": "note", "udfører": "support2", "text": "Kalibreringsfejl — sandsynligvis udløst af varme. Kalibreret og testet med kendte vægte. OK."},
-            {"event_type": "resolve", "udfører": "support2"},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "comment", "actor": "greve", "text": "Vægten har stået ude ved siden af en varmelampe — ved ikke om det har noget at sige."},
+            {"event_type": "note", "actor": "support2", "text": "Kalibreringsfejl — sandsynligvis udløst af varme. Kalibreret og testet med kendte vægte. OK."},
+            {"event_type": "resolve", "actor": "support2"},
         ],
     },
 ]

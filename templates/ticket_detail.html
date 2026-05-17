@@ -2,9 +2,7 @@
 
 {% block content %}
 
-<!-- Detalje-side for én ticket. JS (bruger-søgning + setResolved) ligger i ticket_detail.js -->
-
-<!-- ===================== Topbjælke: INC-nummer + handlinger ===================== -->
+<!-- Actions -->
 <div class="bg-white shadow rounded-xl p-4 flex justify-between items-center mb-4">
 
     <div class="font-semibold text-gray-700">
@@ -13,15 +11,15 @@
 
     <div class="flex gap-2 items-center">
 
-        <!-- Gem + Løs: kun for admin/support. Begge submitter editForm længere nede. -->
         {% if role in ["admin", "support"] %}
         <button form="editForm" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Gem</button>
-        <button type="button"
-                onclick="setResolved(); document.getElementById('editForm').submit();"
-                class="bg-green-600 text-white px-4 py-2 rounded text-sm">Løs</button>
+
+        <form method="POST">
+            <input type="hidden" name="action" value="resolve">
+            <button class="bg-green-600 text-white px-4 py-2 rounded text-sm">Løs</button>
+        </form>
         {% endif %}
 
-        <!-- Almindelig bruger kan kun lukke en ticket (ikke redigere felter) -->
         {% if role not in ["admin", "support"] and ticket.state != "resolved" %}
         <form method="POST" onsubmit="return confirm('Er du sikker på du vil lukke denne ticket?')">
             <input type="hidden" name="action" value="close">
@@ -29,7 +27,6 @@
         </form>
         {% endif %}
 
-        <!-- Slet: kun admin -->
         {% if role == "admin" %}
         <form method="POST" action="/ticket/{{ ticket.id }}/delete"
               onsubmit="return confirm('Er du sikker på du vil slette denne ticket?')">
@@ -47,35 +44,31 @@
 
 <div class="space-y-6">
 
-    <!-- ===================== To kolonner med ticket-felter ===================== -->
+    <!-- Fields -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- Venstre kolonne: hvem/hvad -->
         <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
-            <!-- Ticket-nummer (kan ikke ændres) -->
             <div>
                 <label class="text-xs text-gray-500">Nummer</label>
                 <input value="INC{{ "%06d"|format(ticket.id) }}"
                        class="w-full border p-2 rounded bg-gray-100" disabled>
             </div>
 
-            <!-- Anmodet af: admin/support kan søge en bruger, andre ser bare navnet -->
             <div>
                 <label class="text-xs text-gray-500">Anmodet af</label>
                 {% if role in ["admin", "support"] %}
-                <input id="requestedSearch"
-                       value="{{ ticket.requested_by_name or '' }}"
-                       class="w-full border p-2 rounded">
-                <div id="requestedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
-                <input type="hidden" name="requested_by" id="requested_oid" value="{{ ticket.requested_by or '' }}" form="editForm">
+                <select name="requested_by" form="editForm" class="w-full border p-2 rounded">
+                    {% for u in users %}
+                    <option value="{{ u.oid }}" {% if u.oid == ticket.requested_by %}selected{% endif %}>{{ u.name }}</option>
+                    {% endfor %}
+                </select>
                 {% else %}
                 <input value="{{ ticket.requested_by_name or '' }}"
                        class="w-full border p-2 rounded bg-gray-100" disabled>
                 {% endif %}
             </div>
 
-            <!-- Kontaktoplysninger -->
             <div>
                 <label class="text-xs text-gray-500">Kontakt info</label>
                 <input name="contact_info"
@@ -84,7 +77,6 @@
                        class="w-full border p-2 rounded {% if role not in ['admin', 'support'] %}bg-gray-100{% endif %}">
             </div>
 
-            <!-- Type (brugersupport / funktionalitet / nedbrud) -->
             <div>
                 <label class="text-xs text-gray-500">Type</label>
                 {% if role not in ["admin", "support"] %}
@@ -99,7 +91,6 @@
                 {% endif %}
             </div>
 
-            <!-- Prioritet -->
             <div>
                 <label class="text-xs text-gray-500">Prioritet</label>
                 {% if role not in ["admin", "support"] %}
@@ -116,10 +107,8 @@
 
         </div>
 
-        <!-- Højre kolonne: status og tidsstempler -->
         <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
-            <!-- Tilstand -->
             <div>
                 <label class="text-xs text-gray-500">Tilstand</label>
                 {% if role not in ["admin", "support"] %}
@@ -134,22 +123,21 @@
                 {% endif %}
             </div>
 
-            <!-- Tildelt til: admin/support kan søge en bruger, andre ser bare navnet -->
             <div>
                 <label class="text-xs text-gray-500">Tildelt til</label>
-                {% if role not in ["admin", "support"] %}
+                {% if role in ["admin", "support"] %}
+                <select name="assigned_to" form="editForm" class="w-full border p-2 rounded">
+                    <option value="">Ikke tildelt</option>
+                    {% for u in users %}
+                    <option value="{{ u.oid }}" {% if u.oid == ticket.assigned_to %}selected{% endif %}>{{ u.name }}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
                 <input value="{{ ticket.assigned_to_name or 'Ikke tildelt' }}"
                        class="w-full border p-2 rounded bg-gray-100" disabled>
-                {% else %}
-                <input id="assignedSearch"
-                       value="{{ ticket.assigned_to_name or '' }}"
-                       class="w-full border p-2 rounded">
-                <div id="assignedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
-                <input type="hidden" name="assigned_to" id="assigned_oid" value="{{ ticket.assigned_to or '' }}" form="editForm">
                 {% endif %}
             </div>
 
-            <!-- Oprettet af + datoer (alle disabled — kan ikke ændres) -->
             <div>
                 <label class="text-xs text-gray-500">Oprettet af</label>
                 <input value="{{ ticket.created_by_name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
@@ -169,9 +157,7 @@
 
     </div>
 
-    <!-- ===================== Titel og beskrivelse ===================== -->
     {% if role in ["admin", "support"] %}
-    <!-- Admin/support: rigtig form der kan redigeres. Felterne ovenfor sender ind via form="editForm" -->
     <form method="POST" id="editForm" class="bg-white p-6 rounded-xl shadow space-y-4">
         <input type="hidden" name="action" value="edit">
         <div>
@@ -184,7 +170,6 @@
         </div>
     </form>
     {% else %}
-    <!-- Almindelige brugere: vis kun titel og beskrivelse, ikke redigerbare -->
     <div class="bg-white p-6 rounded-xl shadow space-y-4">
         <div>
             <label class="text-xs text-gray-500">Titel</label>
@@ -197,12 +182,11 @@
     </div>
     {% endif %}
 
-    <!-- ===================== Aktivitet: kommentarer + interne noter ===================== -->
+    <!-- Activity -->
     <div class="bg-white p-6 rounded-xl shadow space-y-4">
 
         <h3 class="font-semibold">Aktivitet</h3>
 
-        <!-- Skriv ny kommentar eller intern note -->
         <form method="POST" class="space-y-3">
             <input type="hidden" name="action" value="comment">
             <textarea name="text" class="w-full border p-2 rounded h-20" placeholder="Skriv kommentar..."></textarea>
@@ -217,18 +201,15 @@
             </div>
         </form>
 
-        <!-- Listen af kommentarer, nyeste først -->
         {% for c in ticket.comments|sort(attribute='created_at', reverse=True) %}
 
             {% if c.type == 'system' %}
-                <!-- System-besked: synlig for alle -->
                 <div class="border-l-4 pl-4 border-gray-300 bg-gray-50 p-3 rounded">
                     <div class="text-xs text-gray-400">System · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}</div>
                     <div class="text-sm text-gray-500 italic">{{ c.text }}</div>
                 </div>
 
             {% elif c.type == 'system_internal' %}
-                <!-- Intern system-besked: kun synlig for admin/support -->
                 {% if role in ["admin", "support"] %}
                 <div class="border-l-4 pl-4 border-gray-300 bg-gray-50 p-3 rounded">
                     <div class="text-xs text-gray-400">System · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}</div>
@@ -237,7 +218,6 @@
                 {% endif %}
 
             {% else %}
-                <!-- Almindelig kommentar (blå) eller intern note (gul) -->
                 <div class="border-l-4 pl-4
                     {% if c.type == 'note' %}border-yellow-400 bg-yellow-50{% else %}border-blue-400 bg-blue-50{% endif %}
                     p-3 rounded">
@@ -251,10 +231,5 @@
     </div>
 
 </div>
-
-<!-- JS til bruger-søgning og setResolved() — kun nødvendig for admin/support -->
-{% if role in ["admin", "support"] %}
-<script src="{{ url_for('static', filename='js/ticket_detail.js') }}"></script>
-{% endif %}
 
 {% endblock %}

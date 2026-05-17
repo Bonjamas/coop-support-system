@@ -13,13 +13,13 @@ GRAPH_SCOPES = ["User.ReadBasic.All"]
 ROLE_PRIORITY = ("admin", "support", "butik")
 DEFAULT_ROLE = "user"
 
-STORE_GROUPS = {
+STORE_SLUG_BY_AD_GROUP = {
     "a7a43b4f-7c34-49a1-a945-6d7b8bd42a42": "karlslunde",
     "6920351e-e813-428a-8c8a-9263a80a9129": "greve",
     "6eff9713-19a7-4aaf-8768-1fa9d76a3589": "hvidovre",
 }
 
-STORE_NAMES = {
+STORE_DISPLAY_NAMES = {
     "karlslunde": "SuperBrugsen Karlslunde",
     "greve":      "365discount Greve",
     "hvidovre":   "Kvickly Hvidovre",
@@ -47,15 +47,10 @@ def get_user_role():
     return DEFAULT_ROLE
 
 
-def get_user_stores():
-    user = get_user() or {}
-    return user.get("stores", [])
-
-
-def stores_from_claims(claims):
+def store_slugs_from_claims(claims):
     raw_groups = claims.get("groups") or []
-    return [STORE_GROUPS[g] for g in raw_groups if g in STORE_GROUPS]
+    return [STORE_SLUG_BY_AD_GROUP[g] for g in raw_groups if g in STORE_SLUG_BY_AD_GROUP]
 
 
 def store_names_from_claims(claims):
-    return [STORE_NAMES[slug] for slug in stores_from_claims(claims)]
+    return [STORE_DISPLAY_NAMES[slug] for slug in store_slugs_from_claims(claims)]

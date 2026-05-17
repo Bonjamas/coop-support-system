@@ -2,8 +2,8 @@ from flask import Blueprint, abort, redirect, render_template, request, url_for
 
 from models import Ticket, db
 from utils.auth import get_user, get_user_role
-from utils.decorators import db_required, login_required, role_required
-from utils.graph import resolve_user_name
+from utils.decorators import login_required, role_required
+from utils.graph import list_users, resolve_user_name
 
 tickets_bp = Blueprint("tickets", __name__)
 
@@ -11,11 +11,10 @@ ALLOWED_PRIORITIES = {"low", "medium", "high"}
 ALLOWED_TYPES = {"support", "funktionalitet", "nedbrud"}
 
 
-@tickets_bp.route("/ticket/<int:id>", methods=["GET", "POST"])
-@db_required
+@tickets_bp.route("/ticket/<int:ticket_id>", methods=["GET", "POST"])
 @login_required
-def view_ticket(id):
-    ticket = Ticket.query.get_or_404(id)
+def view_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
     role = get_user_role()
     user = get_user()
 
@@ -43,19 +42,24 @@ def view_ticket(id):
             ticket.update_state(
                 request.form.get("state"), user.get("name")
             )
-            new_assigned = request.form.get("assigned_to")
-            if new_assigned and new_assigned != ticket.assigned_to:
-                new_assigned_name = resolve_user_name(new_assigned)
+            new_assigned_oid = request.form.get("assigned_to")
+            if new_assigned_oid and new_assigned_oid != ticket.assigned_to:
+                new_assigned_name = resolve_user_name(new_assigned_oid)
             else:
                 new_assigned_name = ticket.assigned_to_name
-            ticket.update_assignment(new_assigned, new_assigned_name, user)
+            ticket.update_assignment(new_assigned_oid, new_assigned_name)
 
-            new_requested = request.form.get("requested_by")
-            if new_requested and new_requested != ticket.requested_by:
-                new_requested_name = resolve_user_name(new_requested)
+            new_requested_oid = request.form.get("requested_by")
+            if new_requested_oid and new_requested_oid != ticket.requested_by:
+                new_requested_name = resolve_user_name(new_requested_oid)
             else:
                 new_requested_name = ticket.requested_by_name
-            ticket.update_requested_by(new_requested, new_requested_name)
+            ticket.update_requested_by(new_requested_oid, new_requested_name)
+
+        elif action == "resolve":
+            if role not in ("admin", "support"):
+                abort(403)
+            ticket.update_state("resolved", user.get("name"))
 
         elif action == "close":
             if role not in ("butik", "user") or ticket.created_by != user.get("oid"):
@@ -79,17 +83,18 @@ def view_ticket(id):
             abort(400, "Ugyldig handling.")
 
         db.session.commit()
-        return redirect(url_for("tickets.view_ticket", id=id))
+        return redirect(url_for("tickets.view_ticket", ticket_id=ticket_id))
 
+    users = list_users() if role in ("admin", "support") else []
     return render_template(
         "ticket_detail.html",
         ticket=ticket,
         role=role,
+        users=users,
     )
 
 
 @tickets_bp.route("/create", methods=["GET", "POST"])
-@db_required
 @login_required
 def create_ticket():
     user = get_user()
@@ -108,17 +113,17 @@ def create_ticket():
             ticket_type = "support"
 
         if role in ("butik", "user"):
-            requested_by = user["oid"]
+            requested_by_oid = user["oid"]
             requested_by_name = user["name"]
-            assigned_to = None
+            assigned_to_oid = None
             assigned_to_name = None
         else:
-            requested_by = request.form.get("requested_by")
-            if not requested_by:
+            requested_by_oid = request.form.get("requested_by")
+            if not requested_by_oid:
                 abort(400, "Anmodet af er påkrævet.")
-            requested_by_name = resolve_user_name(requested_by)
-            assigned_to = request.form.get("assigned_to")
-            assigned_to_name = resolve_user_name(assigned_to)
+            requested_by_name = resolve_user_name(requested_by_oid)
+            assigned_to_oid = request.form.get("assigned_to") or None
+            assigned_to_name = resolve_user_name(assigned_to_oid) if assigned_to_oid else None
 
         ticket = Ticket(
             title=title,
@@ -129,24 +134,24 @@ def create_ticket():
             contact_info=request.form.get("contact_info"),
             created_by=user["oid"],
             created_by_name=user["name"],
-            requested_by=requested_by,
+            requested_by=requested_by_oid,
             requested_by_name=requested_by_name,
-            assigned_to=assigned_to,
+            assigned_to=assigned_to_oid,
             assigned_to_name=assigned_to_name,
         )
         db.session.add(ticket)
         db.session.commit()
-        return redirect(url_for("tickets.view_ticket", id=ticket.id))
+        return redirect(url_for("tickets.view_ticket", ticket_id=ticket.id))
 
-    return render_template("create_ticket.html", role=role)
+    users = list_users() if role in ("admin", "support") else []
+    return render_template("create_ticket.html", role=role, users=users)
 
 
-@tickets_bp.route("/ticket/<int:id>/delete", methods=["POST"])
-@db_required
+@tickets_bp.route("/ticket/<int:ticket_id>/delete", methods=["POST"])
 @login_required
 @role_required("admin")
-def delete_ticket(id):
-    ticket = Ticket.query.get_or_404(id)
+def delete_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
     db.session.delete(ticket)
     db.session.commit()
     return redirect(url_for("pages.dashboard"))

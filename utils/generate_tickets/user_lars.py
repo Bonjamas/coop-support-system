@@ -13,9 +13,9 @@ TICKETS = [
         "type": "support",
         "contact": "lars.andersen@coop.dk",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "comment", "udfører": "lars", "text": "Jeg har tjekket spam-mappen — der er ikke noget nulstillingsmail."},
-            {"event_type": "note", "udfører": "support2", "text": "Nulstillingsmailen ryger i spam pga. manglende SPF-record på vores mailserver. Nulstiller manuelt."},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "comment", "actor": "lars", "text": "Jeg har tjekket spam-mappen — der er ikke noget nulstillingsmail."},
+            {"event_type": "note", "actor": "support2", "text": "Nulstillingsmailen ryger i spam pga. manglende SPF-record på vores mailserver. Nulstiller manuelt."},
         ],
     },
 ]

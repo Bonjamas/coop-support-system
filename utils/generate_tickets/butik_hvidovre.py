@@ -13,10 +13,10 @@ TICKETS = [
         "type": "funktionalitet",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "ESL-gateway i Hvidovre ser ud til at have mistet forbindelsen til base-stationen. Genstarter gateway."},
-            {"event_type": "comment", "udfører": "hvidovre", "text": "Når tror du det er oppe igen? Vi har fået nye tilbudspriser i dag."},
-            {"event_type": "note", "udfører": "support1", "text": "Gateway er genstartet og begynder at synkronisere. Estimeret 30 min til fuld opdatering."},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "ESL-gateway i Hvidovre ser ud til at have mistet forbindelsen til base-stationen. Genstarter gateway."},
+            {"event_type": "comment", "actor": "hvidovre", "text": "Når tror du det er oppe igen? Vi har fået nye tilbudspriser i dag."},
+            {"event_type": "note", "actor": "support1", "text": "Gateway er genstartet og begynder at synkronisere. Estimeret 30 min til fuld opdatering."},
         ],
     },
     {
@@ -26,9 +26,9 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Vægtenhederne på kasse 1 og 3 er ikke registreret i systemet efter sidste opdatering. Kigger på det."},
-            {"event_type": "comment", "udfører": "hvidovre", "text": "Kunder klager — de kan ikke købe løsvægtsvarer."},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Vægtenhederne på kasse 1 og 3 er ikke registreret i systemet efter sidste opdatering. Kigger på det."},
+            {"event_type": "comment", "actor": "hvidovre", "text": "Kunder klager — de kan ikke købe løsvægtsvarer."},
         ],
     },
     {
@@ -38,9 +38,9 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "comment", "udfører": "hvidovre", "text": "Vi har forsøgt 4 gange siden i morges. Samme fejl hver gang."},
-            {"event_type": "note", "udfører": "support2", "text": "Bestillingssystemets API-endpoint svarer ikke. Ser ud til at være serversiden. Eskalerer."},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "comment", "actor": "hvidovre", "text": "Vi har forsøgt 4 gange siden i morges. Samme fejl hver gang."},
+            {"event_type": "note", "actor": "support2", "text": "Bestillingssystemets API-endpoint svarer ikke. Ser ud til at være serversiden. Eskalerer."},
         ],
     },
     {
@@ -50,10 +50,10 @@ TICKETS = [
         "type": "support",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Scannerene er ikke i firmwarelisten — de er muligvis ikke opdateret. Sender firmware-link."},
-            {"event_type": "comment", "udfører": "hvidovre", "text": "Hvordan opdaterer vi dem? Vi har aldrig gjort det før."},
-            {"event_type": "note", "udfører": "support2", "text": "Sender step-by-step guide på mail til kontaktadressen."},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Scannerene er ikke i firmwarelisten — de er muligvis ikke opdateret. Sender firmware-link."},
+            {"event_type": "comment", "actor": "hvidovre", "text": "Hvordan opdaterer vi dem? Vi har aldrig gjort det før."},
+            {"event_type": "note", "actor": "support2", "text": "Sender step-by-step guide på mail til kontaktadressen."},
         ],
     },
     {
@@ -87,10 +87,10 @@ TICKETS = [
         "type": "funktionalitet",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "comment", "udfører": "hvidovre", "text": "Det er specielt varer i kategori 'Mejeri' der har forkerte priser."},
-            {"event_type": "note", "udfører": "support1", "text": "POS-klienten havde cachet gamle priser. Cache tømt og priser er nu korrekte."},
-            {"event_type": "resolve", "udfører": "support1"},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "comment", "actor": "hvidovre", "text": "Det er specielt varer i kategori 'Mejeri' der har forkerte priser."},
+            {"event_type": "note", "actor": "support1", "text": "POS-klienten havde cachet gamle priser. Cache tømt og priser er nu korrekte."},
+            {"event_type": "resolve", "actor": "support1"},
         ],
     },
     {
@@ -100,9 +100,9 @@ TICKETS = [
         "type": "support",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "Guidet personalet telefonisk til at isætte ny papirrulle korrekt. Virker nu."},
-            {"event_type": "resolve", "udfører": "support1"},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "Guidet personalet telefonisk til at isætte ny papirrulle korrekt. Virker nu."},
+            {"event_type": "resolve", "actor": "support1"},
         ],
     },
     {
@@ -112,9 +112,9 @@ TICKETS = [
         "type": "support",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Print-driver version 4.2.1 har en kendt fejl med lange jobs. Tilbagerullet til 4.1.9."},
-            {"event_type": "resolve", "udfører": "support2"},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Print-driver version 4.2.1 har en kendt fejl med lange jobs. Tilbagerullet til 4.1.9."},
+            {"event_type": "resolve", "actor": "support2"},
         ],
     },
     {
@@ -124,10 +124,10 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "44 91 28 76",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Strømforsyningen er defekt — viser ustabile spændinger under belastning. Udskifter."},
-            {"event_type": "comment", "udfører": "hvidovre", "text": "Den virker perfekt nu. Mange tak for den hurtige hjælp."},
-            {"event_type": "resolve", "udfører": "support2"},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Strømforsyningen er defekt — viser ustabile spændinger under belastning. Udskifter."},
+            {"event_type": "comment", "actor": "hvidovre", "text": "Den virker perfekt nu. Mange tak for den hurtige hjælp."},
+            {"event_type": "resolve", "actor": "support2"},
         ],
     },
 ]

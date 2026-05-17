@@ -31,3 +31,19 @@ def resolve_user_name(oid):
     if not data:
         return None
     return data.get("displayName")
+
+
+def list_users():
+    data = graph_get(
+        "https://graph.microsoft.com/v1.0/users"
+        "?$select=id,displayName"
+        "&$orderby=displayName"
+        "&$top=100"
+    )
+    if not data:
+        return []
+    return [
+        {"oid": u["id"], "name": u["displayName"]}
+        for u in data.get("value", [])
+        if u.get("id") and u.get("displayName")
+    ]

@@ -13,9 +13,9 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "33 47 21 05",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "Fejlkode E-104 peger på korrupt boot-partition. Forsøger recovery via USB."},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Tak — vi holder kassen lukket indtil videre."},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "Fejlkode E-104 peger på korrupt boot-partition. Forsøger recovery via USB."},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Tak — vi holder kassen lukket indtil videre."},
         ],
     },
     {
@@ -25,9 +25,9 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "33 47 21 05",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "Remote-adgang virker ikke — kassen svarer ikke på netværket. Skal sandsynligvis på stedet."},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Den gik offline midt i en transaktion. Kunden fik ikke gennemført sin betaling."},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "Remote-adgang virker ikke — kassen svarer ikke på netværket. Skal sandsynligvis på stedet."},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Den gik offline midt i en transaktion. Kunden fik ikke gennemført sin betaling."},
         ],
     },
     {
@@ -37,9 +37,9 @@ TICKETS = [
         "type": "support",
         "contact": "33 47 21 05",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "Kontoen er oprettet men ikke synkroniseret til POS-systemet endnu. Kører manuel synk."},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Hvornår kan hun logge ind? Hun starter om 2 timer."},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "Kontoen er oprettet men ikke synkroniseret til POS-systemet endnu. Kører manuel synk."},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Hvornår kan hun logge ind? Hun starter om 2 timer."},
         ],
     },
     {
@@ -65,10 +65,10 @@ TICKETS = [
         "type": "support",
         "contact": "33 47 21 05",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "Driver er korrupt efter KB5034441-opdatering. Deinstallerer og geninstallerer driver."},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Tak — den virker nu!"},
-            {"event_type": "resolve", "udfører": "support1"},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "Driver er korrupt efter KB5034441-opdatering. Deinstallerer og geninstallerer driver."},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Tak — den virker nu!"},
+            {"event_type": "resolve", "actor": "support1"},
         ],
     },
     {
@@ -78,10 +78,10 @@ TICKETS = [
         "type": "funktionalitet",
         "contact": "33 47 21 05",
         "events": [
-            {"event_type": "assign", "udfører": "support1", "assignee": "support1"},
-            {"event_type": "note", "udfører": "support1", "text": "AP-enhed ved køledisk lyser rødt og er ude af mesh-netværket. Udskifter med reserveenhed."},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Super — WiFi virker nu over det hele igen."},
-            {"event_type": "resolve", "udfører": "support1"},
+            {"event_type": "assign", "actor": "support1", "assignee": "support1"},
+            {"event_type": "note", "actor": "support1", "text": "AP-enhed ved køledisk lyser rødt og er ude af mesh-netværket. Udskifter med reserveenhed."},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Super — WiFi virker nu over det hele igen."},
+            {"event_type": "resolve", "actor": "support1"},
         ],
     },
     {
@@ -91,11 +91,11 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "33 47 21 05",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Det er sket 4 gange i dag. Kassen er varm at røre ved."},
-            {"event_type": "note", "udfører": "support2", "text": "Overheatning bekræftet — intern ventilator er støvet til. Renser og tester."},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Den har ikke genstartet siden I var her. Tak!"},
-            {"event_type": "resolve", "udfører": "support2"},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Det er sket 4 gange i dag. Kassen er varm at røre ved."},
+            {"event_type": "note", "actor": "support2", "text": "Overheatning bekræftet — intern ventilator er støvet til. Renser og tester."},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Den har ikke genstartet siden I var her. Tak!"},
+            {"event_type": "resolve", "actor": "support2"},
         ],
     },
     {
@@ -105,10 +105,10 @@ TICKETS = [
         "type": "support",
         "contact": "33 47 21 05",
         "events": [
-            {"event_type": "assign", "udfører": "support2", "assignee": "support2"},
-            {"event_type": "note", "udfører": "support2", "text": "Kontoen er låst efter for mange fejlede forsøg. Oplåst og ny adgangskode sat."},
-            {"event_type": "comment", "udfører": "karlslunde", "text": "Hun kan logge ind nu. Tak!"},
-            {"event_type": "resolve", "udfører": "support2"},
+            {"event_type": "assign", "actor": "support2", "assignee": "support2"},
+            {"event_type": "note", "actor": "support2", "text": "Kontoen er låst efter for mange fejlede forsøg. Oplåst og ny adgangskode sat."},
+            {"event_type": "comment", "actor": "karlslunde", "text": "Hun kan logge ind nu. Tak!"},
+            {"event_type": "resolve", "actor": "support2"},
         ],
     },
 ]

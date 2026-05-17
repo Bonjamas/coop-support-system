@@ -2,7 +2,7 @@ import os
 
 from flask import Blueprint, abort, redirect, request, session, url_for
 
-from utils.auth import GRAPH_SCOPES, build_msal_app, store_names_from_claims, stores_from_claims
+from utils.auth import GRAPH_SCOPES, build_msal_app, store_names_from_claims
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -38,7 +38,6 @@ def auth_callback():
         "oid": claims.get("oid"),
         "name": claims.get("name"),
         "roles": claims.get("roles", []),
-        "stores": stores_from_claims(claims),
         "store_names": store_names_from_claims(claims),
     }
     session["access_token"] = result.get("access_token")

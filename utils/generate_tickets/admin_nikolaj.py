@@ -13,9 +13,9 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "nikolaj.admin@coop.dk",
         "events": [
-            {"event_type": "assign", "udfører": "admin", "assignee": "admin"},
-            {"event_type": "note", "udfører": "admin", "text": "Fejlen opstod efter gårsdagens deploy af integrations-service v2.3.1. Ruller tilbage til v2.3.0."},
-            {"event_type": "note", "udfører": "admin", "text": "Tilbagerulning gennemført. Overvåger for nye dubletter de næste 2 timer."},
+            {"event_type": "assign", "actor": "admin", "assignee": "admin"},
+            {"event_type": "note", "actor": "admin", "text": "Fejlen opstod efter gårsdagens deploy af integrations-service v2.3.1. Ruller tilbage til v2.3.0."},
+            {"event_type": "note", "actor": "admin", "text": "Tilbagerulning gennemført. Overvåger for nye dubletter de næste 2 timer."},
         ],
     },
     {
@@ -25,10 +25,10 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "29 83 17 44",
         "events": [
-            {"event_type": "assign", "udfører": "admin", "assignee": "admin"},
-            {"event_type": "note", "udfører": "admin", "text": "Temperatur er 28°C — grænsen er 25°C. Facility er kontaktet. Afventer svar."},
-            {"event_type": "comment", "udfører": "greve", "text": "Vi har åbnet serverrumsdøren midlertidigt for at ventilere."},
-            {"event_type": "note", "udfører": "admin", "text": "Facility bekræfter at klimaanlægget er defekt. Tekniker ankommer i morgen. Overvåger temperatur."},
+            {"event_type": "assign", "actor": "admin", "assignee": "admin"},
+            {"event_type": "note", "actor": "admin", "text": "Temperatur er 28°C — grænsen er 25°C. Facility er kontaktet. Afventer svar."},
+            {"event_type": "comment", "actor": "greve", "text": "Vi har åbnet serverrumsdøren midlertidigt for at ventilere."},
+            {"event_type": "note", "actor": "admin", "text": "Facility bekræfter at klimaanlægget er defekt. Tekniker ankommer i morgen. Overvåger temperatur."},
         ],
     },
     {
@@ -38,9 +38,9 @@ TICKETS = [
         "type": "funktionalitet",
         "contact": "nikolaj.admin@coop.dk",
         "events": [
-            {"event_type": "assign", "udfører": "admin", "assignee": "admin"},
-            {"event_type": "note", "udfører": "admin", "text": "Udrulning planlagt til søndag nat kl. 02:00. Butikkerne er varslet."},
-            {"event_type": "note", "udfører": "admin", "text": "Testinstallation på Karlslunde gennemført uden fejl. Fortsætter med de øvrige."},
+            {"event_type": "assign", "actor": "admin", "assignee": "admin"},
+            {"event_type": "note", "actor": "admin", "text": "Udrulning planlagt til søndag nat kl. 02:00. Butikkerne er varslet."},
+            {"event_type": "note", "actor": "admin", "text": "Testinstallation på Karlslunde gennemført uden fejl. Fortsætter med de øvrige."},
         ],
     },
     {
@@ -50,10 +50,10 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "nikolaj.admin@coop.dk",
         "events": [
-            {"event_type": "assign", "udfører": "admin", "assignee": "admin"},
-            {"event_type": "note", "udfører": "admin", "text": "AD-synkroniseringen overskrev lokale brugerkonti med forkerte attributter. Rullet tilbage."},
-            {"event_type": "note", "udfører": "admin", "text": "Alle 12 konti er gendannet og testet. Identificerer årsagen til at synkroniseringen fejlede."},
-            {"event_type": "resolve", "udfører": "admin"},
+            {"event_type": "assign", "actor": "admin", "assignee": "admin"},
+            {"event_type": "note", "actor": "admin", "text": "AD-synkroniseringen overskrev lokale brugerkonti med forkerte attributter. Rullet tilbage."},
+            {"event_type": "note", "actor": "admin", "text": "Alle 12 konti er gendannet og testet. Identificerer årsagen til at synkroniseringen fejlede."},
+            {"event_type": "resolve", "actor": "admin"},
         ],
     },
     {
@@ -63,9 +63,9 @@ TICKETS = [
         "type": "nedbrud",
         "contact": "nikolaj.admin@coop.dk",
         "events": [
-            {"event_type": "assign", "udfører": "admin", "assignee": "admin"},
-            {"event_type": "note", "udfører": "admin", "text": "Nyt certifikat udstedt og installeret. Betalinger virker igen. Opretter reminder 30 dage før næste udløb."},
-            {"event_type": "resolve", "udfører": "admin"},
+            {"event_type": "assign", "actor": "admin", "assignee": "admin"},
+            {"event_type": "note", "actor": "admin", "text": "Nyt certifikat udstedt og installeret. Betalinger virker igen. Opretter reminder 30 dage før næste udløb."},
+            {"event_type": "resolve", "actor": "admin"},
         ],
     },
 ]

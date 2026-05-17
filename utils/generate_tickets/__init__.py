@@ -62,15 +62,15 @@ def _create_ticket(ticket_data, creator, users):
     db.session.flush()
 
     for event in ticket_data.get("events", []):
-        udfører = users[event["udfører"]]
+        actor = users[event["actor"]]
         event_type = event["event_type"]
 
         if event_type == "assign":
             assignee = users[event["assignee"]]
-            ticket.update_assignment(assignee["oid"], assignee["name"], udfører)
+            ticket.update_assignment(assignee["oid"], assignee["name"])
         elif event_type == "note":
-            ticket.add_user_comment(event["text"], "note", udfører["role"], udfører)
+            ticket.add_user_comment(event["text"], "note", actor["role"], actor)
         elif event_type == "comment":
-            ticket.add_user_comment(event["text"], "comment", udfører["role"], udfører)
+            ticket.add_user_comment(event["text"], "comment", actor["role"], actor)
         elif event_type == "resolve":
-            ticket.update_state("resolved", udfører["name"])
+            ticket.update_state("resolved", actor["name"])

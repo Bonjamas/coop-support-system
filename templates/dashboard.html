@@ -2,32 +2,25 @@
 
 {% block content %}
 
-<!-- Dashboard for admin/support: hurtige tal om tickets. -->
-
 <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
 
-<!-- Øverste række: 4 nøgletal -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
-    <!-- Oprettet i dag -->
     <div class="bg-white p-4 rounded-xl shadow">
         <p class="text-sm text-gray-500">Oprettet i dag</p>
         <p class="text-2xl font-bold text-blue-600">{{ stats.created_today }}</p>
     </div>
 
-    <!-- Lukket i dag -->
     <div class="bg-white p-4 rounded-xl shadow">
         <p class="text-sm text-gray-500">Lukket i dag</p>
         <p class="text-2xl font-bold text-green-600">{{ stats.resolved_today }}</p>
     </div>
 
-    <!-- Aktive (ikke løst) -->
     <div class="bg-white p-4 rounded-xl shadow">
         <p class="text-sm text-gray-500">Aktive</p>
         <p class="text-2xl font-bold text-yellow-600">{{ stats.active }}</p>
     </div>
 
-    <!-- Høj prioritet -->
     <div class="bg-white p-4 rounded-xl shadow">
         <p class="text-sm text-gray-500">Høj prioritet</p>
         <p class="text-2xl font-bold text-red-600">{{ stats.high_priority }}</p>
@@ -35,7 +28,6 @@
 
 </div>
 
-<!-- Nederste boks: fordeling på status -->
 <div class="bg-white p-6 rounded-xl shadow">
 
     <h3 class="font-semibold mb-4">Status overblik</h3>

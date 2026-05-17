@@ -8,18 +8,14 @@
 
 <body class="h-screen">
 
-<!-- Forside (vises før login). Baggrundsbillede + mørk overlay + login-knap. -->
 <div class="relative h-full w-full">
 
-    <!-- Baggrundsbillede der dækker hele skærmen -->
     <div class="absolute inset-0 bg-cover bg-center"
          style="background-image: url('{{ url_for('static', filename='images/background.png') }}');">
     </div>
 
-    <!-- Mørkt overlay så teksten kan læses -->
     <div class="absolute inset-0 bg-black/60"></div>
 
-    <!-- Indhold centreret oven på overlay -->
     <div class="relative z-10 flex flex-col justify-center items-center h-full text-white text-center px-6">
 
         <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-16 mb-6">
@@ -31,7 +27,6 @@
             Få overblik over incidents, opret sager og følg status.
         </p>
 
-        <!-- Login med Microsoft (Entra ID) -->
         <div class="flex flex-col sm:flex-row gap-4">
 
             <a href="/login"

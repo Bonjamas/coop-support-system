@@ -3,16 +3,6 @@ from functools import wraps
 from flask import abort, redirect, session, url_for
 
 from utils.auth import get_user_role
-from utils.db import check_db_connection
-
-
-def db_required(view):
-    @wraps(view)
-    def wrapper(*args, **kwargs):
-        if not check_db_connection():
-            return redirect(url_for("errors.db_error"))
-        return view(*args, **kwargs)
-    return wrapper
 
 
 def login_required(view):

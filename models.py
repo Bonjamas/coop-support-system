@@ -50,22 +50,15 @@ class Ticket(db.Model):
         owner_field = (
             cls.created_by if role in END_USER_ROLES else cls.assigned_to
         )
-        if resolved:
-            state_filter = cls.state == "resolved"
-        else:
-            state_filter = cls.state != "resolved"
-        return (
-            cls.query
-            .filter(owner_field == user.get("oid"), state_filter)
-            .order_by(cls.updated_at.desc())
+        state_filter = (
+            cls.state == "resolved" if resolved else cls.state != "resolved"
         )
+        return cls.query.filter(owner_field == user.get("oid"), state_filter)
 
     @classmethod
     def unassigned(cls):
-        return (
-            cls.query
-            .filter((cls.assigned_to.is_(None)) | (cls.assigned_to == ""))
-            .order_by(cls.updated_at.desc())
+        return cls.query.filter(
+            (cls.assigned_to.is_(None)) | (cls.assigned_to == "")
         )
 
     # --- MUTATIONS ---
@@ -79,7 +72,7 @@ class Ticket(db.Model):
         ))
         self.state = new_state
 
-    def update_assignment(self, new_oid, new_name, current_user):
+    def update_assignment(self, new_oid, new_name):
         new_oid = (new_oid or "").strip()
         previous_oid = self.assigned_to
 
@@ -90,13 +83,7 @@ class Ticket(db.Model):
                 db.session.add(Comment.system(
                     f"Tildelt til {new_name}.", ticket_id=self.id
                 ))
-        elif not previous_oid:
-            self.assigned_to = current_user.get("oid")
-            self.assigned_to_name = current_user.get("name")
-            db.session.add(Comment.system(
-                f"Tildelt til {self.assigned_to_name}.", ticket_id=self.id
-            ))
-        else:
+        elif previous_oid:
             self.assigned_to = None
             self.assigned_to_name = None
             db.session.add(Comment.system("Tildeling fjernet.", ticket_id=self.id))

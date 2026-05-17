@@ -2,38 +2,34 @@
 
 {% block content %}
 
-<!-- "Opret ticket"-siden. Felterne afhænger af brugerens rolle. JS: create_ticket.js (kun admin/support) -->
-
 <h2 class="text-xl font-semibold mb-4">Opret ticket</h2>
 
-<form method="POST" id="createForm" class="space-y-6">
+<form method="POST" class="space-y-6">
 
-    <!-- ===================== To kolonner: hvem/hvad ===================== -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- Venstre kolonne -->
         <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
-            <!-- Anmodet af: almindelige brugere er låst til sig selv, admin/support kan vælge en anden -->
             <div>
                 {% if role not in ["admin", "support"] %}
                 <label class="text-xs text-gray-500">Anmodet af</label>
                 <input value="{{ session.user.name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
                 {% else %}
                 <label class="text-xs text-gray-500">Anmodet af *</label>
-                <input id="requestedSearch" class="w-full border p-2 rounded">
-                <div id="requestedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
-                <input type="hidden" name="requested_by" id="requested_oid">
+                <select name="requested_by" required class="w-full border p-2 rounded">
+                    <option value="">Vælg bruger...</option>
+                    {% for u in users %}
+                    <option value="{{ u.oid }}">{{ u.name }}</option>
+                    {% endfor %}
+                </select>
                 {% endif %}
             </div>
 
-            <!-- Kontaktoplysninger -->
             <div>
                 <label class="text-xs text-gray-500">Kontakt info *</label>
                 <input name="contact_info" required class="w-full border p-2 rounded">
             </div>
 
-            <!-- Type -->
             <div>
                 <label class="text-xs text-gray-500">Type *</label>
                 <select name="type" required class="w-full border p-2 rounded">
@@ -43,7 +39,6 @@
                 </select>
             </div>
 
-            <!-- Prioritet -->
             <div>
                 <label class="text-xs text-gray-500">Prioritet *</label>
                 <select name="priority" required class="w-full border p-2 rounded">
@@ -55,26 +50,25 @@
 
         </div>
 
-        <!-- Højre kolonne -->
         <div class="bg-white p-5 rounded-xl shadow space-y-4">
 
-            <!-- Tilstand: en ny ticket starter altid som "Ny" -->
             <div>
                 <label class="text-xs text-gray-500">Tilstand</label>
                 <input value="Ny" class="w-full border p-2 rounded bg-gray-100" disabled>
             </div>
 
-            <!-- Kun admin/support kan tildele en ticket fra start -->
             {% if role in ["admin", "support"] %}
             <div>
                 <label class="text-xs text-gray-500">Tildelt til</label>
-                <input id="assignedSearch" class="w-full border p-2 rounded">
-                <div id="assignedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
-                <input type="hidden" name="assigned_to" id="assigned_oid">
+                <select name="assigned_to" class="w-full border p-2 rounded">
+                    <option value="">Ikke tildelt</option>
+                    {% for u in users %}
+                    <option value="{{ u.oid }}">{{ u.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             {% endif %}
 
-            <!-- Oprettet af: altid den indloggede bruger -->
             <div>
                 <label class="text-xs text-gray-500">Oprettet af</label>
                 <input value="{{ session.user.name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
@@ -84,7 +78,6 @@
 
     </div>
 
-    <!-- ===================== Titel + beskrivelse + opret-knap ===================== -->
     <div class="bg-white p-6 rounded-xl shadow space-y-4">
 
         <div>
@@ -104,10 +97,5 @@
     </div>
 
 </form>
-
-<!-- JS til bruger-søgning + submit-validering — kun nødvendig for admin/support -->
-{% if role in ["admin", "support"] %}
-<script src="{{ url_for('static', filename='js/create_ticket.js') }}"></script>
-{% endif %}
 
 {% endblock %}
