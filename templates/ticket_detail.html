@@ -191,33 +191,29 @@
             <input type="hidden" name="action" value="comment">
             <textarea name="text" class="w-full border p-2 rounded h-20" placeholder="Skriv kommentar..."></textarea>
             <div class="flex gap-3">
+                {% if role in ["admin", "support"] %}
                 <select name="type" class="border p-2 rounded text-sm">
                     <option value="comment">Kommentar</option>
-                    {% if role in ["admin", "support"] %}
                     <option value="note">Intern note</option>
-                    {% endif %}
                 </select>
+                {% else %}
+                <input type="hidden" name="type" value="comment">
+                {% endif %}
                 <button class="bg-green-600 text-white px-4 py-2 rounded">Send</button>
             </div>
         </form>
 
         {% for c in ticket.comments|sort(attribute='created_at', reverse=True) %}
 
-            {% if c.type == 'system' %}
-                <div class="border-l-4 pl-4 border-gray-300 bg-gray-50 p-3 rounded">
-                    <div class="text-xs text-gray-400">System · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}</div>
-                    <div class="text-sm text-gray-500 italic">{{ c.text }}</div>
-                </div>
-
-            {% elif c.type == 'system_internal' %}
+            {% if c.type == 'system_internal' %}
                 {% if role in ["admin", "support"] %}
                 <div class="border-l-4 pl-4 border-gray-300 bg-gray-50 p-3 rounded">
-                    <div class="text-xs text-gray-400">System · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}</div>
+                    <div class="text-xs text-gray-400">System · {{ c.created_at.strftime("%d-%m-%Y %H:%M") }}{% if c.author_name %} · {{ c.author_name }}{% endif %}</div>
                     <div class="text-sm text-gray-500 italic">{{ c.text }}</div>
                 </div>
                 {% endif %}
 
-            {% else %}
+            {% elif c.type != 'note' or role in ["admin", "support"] %}
                 <div class="border-l-4 pl-4
                     {% if c.type == 'note' %}border-yellow-400 bg-yellow-50{% else %}border-blue-400 bg-blue-50{% endif %}
                     p-3 rounded">

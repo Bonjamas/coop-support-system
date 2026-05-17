@@ -32,34 +32,31 @@ def view_ticket(ticket_id):
             if not title:
                 abort(400, "Titel er påkrævet.")
 
-            ticket.title = title
+            ticket.update_title(title, user)
             ticket.description = request.form.get("description")
-            if (priority := request.form.get("priority")) in ALLOWED_PRIORITIES:
-                ticket.priority = priority
+            ticket.update_priority(request.form.get("priority"), user)
             ticket.contact_info = request.form.get("contact_info")
-            if (ticket_type := request.form.get("type")) in ALLOWED_TYPES:
-                ticket.type = ticket_type
-            ticket.update_state(
-                request.form.get("state"), user.get("name")
-            )
+            ticket.update_type(request.form.get("type"), user)
+            ticket.update_state(request.form.get("state"), user)
+
             new_assigned_oid = request.form.get("assigned_to")
             if new_assigned_oid and new_assigned_oid != ticket.assigned_to:
                 new_assigned_name = resolve_user_name(new_assigned_oid)
             else:
                 new_assigned_name = ticket.assigned_to_name
-            ticket.update_assignment(new_assigned_oid, new_assigned_name)
+            ticket.update_assignment(new_assigned_oid, new_assigned_name, user)
 
             new_requested_oid = request.form.get("requested_by")
             if new_requested_oid and new_requested_oid != ticket.requested_by:
                 new_requested_name = resolve_user_name(new_requested_oid)
             else:
                 new_requested_name = ticket.requested_by_name
-            ticket.update_requested_by(new_requested_oid, new_requested_name)
+            ticket.update_requested_by(new_requested_oid, new_requested_name, user)
 
         elif action == "resolve":
             if role not in ("admin", "support"):
                 abort(403)
-            ticket.update_state("resolved", user.get("name"))
+            ticket.update_state("resolved", user)
 
         elif action == "close":
             if role not in ("butik", "user") or ticket.created_by != user.get("oid"):
@@ -140,6 +137,8 @@ def create_ticket():
             assigned_to_name=assigned_to_name,
         )
         db.session.add(ticket)
+        db.session.flush()
+        ticket.log_creation(user)
         db.session.commit()
         return redirect(url_for("tickets.view_ticket", ticket_id=ticket.id))
 
