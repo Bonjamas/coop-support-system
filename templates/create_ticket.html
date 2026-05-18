@@ -4,7 +4,7 @@
 
 <h2 class="text-xl font-semibold mb-4">Opret ticket</h2>
 
-<form method="POST" id="createForm" class="space-y-6">
+<form method="POST" class="space-y-6">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -16,9 +16,12 @@
                 <input value="{{ session.user.name }}" class="w-full border p-2 rounded bg-gray-100" disabled>
                 {% else %}
                 <label class="text-xs text-gray-500">Anmodet af *</label>
-                <input id="requestedSearch" class="w-full border p-2 rounded">
-                <div id="requestedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
-                <input type="hidden" name="requested_by" id="requested_oid">
+                <select name="requested_by" required class="w-full border p-2 rounded">
+                    <option value="">Vælg bruger...</option>
+                    {% for u in users %}
+                    <option value="{{ u.oid }}">{{ u.name }}</option>
+                    {% endfor %}
+                </select>
                 {% endif %}
             </div>
 
@@ -57,9 +60,12 @@
             {% if role in ["admin", "support"] %}
             <div>
                 <label class="text-xs text-gray-500">Tildelt til</label>
-                <input id="assignedSearch" class="w-full border p-2 rounded">
-                <div id="assignedResults" class="hidden border bg-white shadow rounded max-h-40 overflow-y-auto"></div>
-                <input type="hidden" name="assigned_to" id="assigned_oid">
+                <select name="assigned_to" class="w-full border p-2 rounded">
+                    <option value="">Ikke tildelt</option>
+                    {% for u in users %}
+                    <option value="{{ u.oid }}">{{ u.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             {% endif %}
 
@@ -91,66 +97,5 @@
     </div>
 
 </form>
-
-<script>
-function setupSearch(inputId, resultsId, oidId) {
-    const input = document.getElementById(inputId);
-    const results = document.getElementById(resultsId);
-
-    if (!input || !results) return;
-
-    input.addEventListener("input", async () => {
-        const q = input.value;
-        if (q.length < 2) { results.classList.add("hidden"); return; }
-
-        try {
-            const res = await fetch(`/api/users?q=${encodeURIComponent(q)}`);
-            const users = await res.json();
-
-            results.innerHTML = "";
-            results.classList.remove("hidden");
-
-            if (users.length === 0) {
-                const empty = document.createElement("div");
-                empty.className = "p-2 text-xs text-gray-400";
-                empty.innerText = "Ingen resultater";
-                results.appendChild(empty);
-            } else {
-                users.forEach(u => {
-                    const div = document.createElement("div");
-                    div.className = "p-2 hover:bg-gray-100 cursor-pointer";
-                    div.innerText = u.name;
-                    div.onclick = () => {
-                        document.getElementById(oidId).value = u.oid;
-                        input.value = u.name;
-                        results.classList.add("hidden");
-                    };
-                    results.appendChild(div);
-                });
-            }
-        } catch {
-            results.classList.add("hidden");
-        }
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!input.contains(e.target) && !results.contains(e.target)) {
-            results.classList.add("hidden");
-        }
-    });
-}
-
-setupSearch("requestedSearch", "requestedResults", "requested_oid");
-setupSearch("assignedSearch", "assignedResults", "assigned_oid");
-
-{% if role in ["admin", "support"] %}
-document.getElementById('createForm').addEventListener('submit', function(e) {
-    if (!document.getElementById('requested_oid').value) {
-        alert('Vælg en person under "Anmodet af"');
-        e.preventDefault();
-    }
-});
-{% endif %}
-</script>
 
 {% endblock %}
