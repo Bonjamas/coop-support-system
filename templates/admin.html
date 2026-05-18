@@ -11,7 +11,7 @@
         <p class="text-sm text-gray-500 mb-3">
             Opretter dummy-tickets hvis databasen er tom.
         </p>
-        <form method="POST" action="{{ url_for('seed_data') }}">
+        <form method="POST" action="{{ url_for('admin.generate_testdata') }}">
             <button class="bg-blue-600 text-white px-4 py-2 rounded text-sm">
                 Generér testdata
             </button>
@@ -25,7 +25,7 @@
         <p class="text-sm text-gray-500 mb-3">
             Sletter alle tickets og kommentarer permanent.
         </p>
-        <form method="POST" action="{{ url_for('delete_all') }}"
+        <form method="POST" action="{{ url_for('admin.delete_all_tickets') }}"
               onsubmit="return confirm('Er du SIKKER? Alle tickets og kommentarer slettes.')">
             <button class="bg-red-600 text-white px-4 py-2 rounded text-sm">
                 Slet alle tickets og kommentarer

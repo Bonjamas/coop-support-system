@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Coop IT Support</title>
+    {% if variant == "db" %}<meta http-equiv="refresh" content="5; url=/">{% endif %}
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
 </head>
 
@@ -10,14 +11,37 @@
 
 <div class="bg-white rounded-2xl shadow-lg p-10 max-w-md w-full text-center">
 
-    <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-12 mx-auto mb-6">
+    {% if variant == "db" %}
 
-    <h1 class="text-5xl font-bold text-gray-800 mb-2">{{ code }}</h1>
-    <p class="text-gray-600 mb-8">{{ message }}</p>
+        <div class="flex justify-center mb-4">
+            <div class="bg-red-100 text-red-600 rounded-full p-4 text-2xl">⚠️</div>
+        </div>
 
-    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 inline-block">
-        Tilbage til forsiden
-    </a>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Database er nede</h2>
+        <p class="text-gray-500 mb-6">Systemet forsøger automatisk at genoprette forbindelsen...</p>
+
+        <div class="flex justify-center mb-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-4 border-red-500 border-t-transparent"></div>
+        </div>
+
+        <p class="text-sm text-gray-400">Siden opdateres automatisk...</p>
+
+        <div class="mt-6">
+            <a href="/" class="text-sm text-red-600 hover:underline">Prøv igen nu</a>
+        </div>
+
+    {% else %}
+
+        <img src="{{ url_for('static', filename='images/coop-logo.png') }}" class="h-12 mx-auto mb-6">
+
+        <h1 class="text-5xl font-bold text-gray-800 mb-2">{{ code }}</h1>
+        <p class="text-gray-600 mb-8">{{ message }}</p>
+
+        <a href="/" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 inline-block">
+            Tilbage til forsiden
+        </a>
+
+    {% endif %}
 
 </div>
 

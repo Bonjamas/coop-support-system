@@ -10,7 +10,7 @@
 
 <div class="flex h-screen">
 
-    <!-- SIDEBAR -->
+    <!-- Sidebar -->
     <div class="w-64 bg-gray-900 text-white flex flex-col">
 
         <a href="/"
@@ -19,7 +19,6 @@
             <span class="font-bold">Coop IT</span>
         </a>
 
-        <!-- NAV -->
         <nav class="p-4 space-y-2">
 
             {% if role in ["admin", "support"] %}
@@ -66,10 +65,10 @@
 
     </div>
 
-    <!-- MAIN -->
+    <!-- Main -->
     <div class="flex-1 flex flex-col">
 
-        <!-- TOPBAR -->
+        <!-- Topbar -->
         <div class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
             <h1 class="text-xl font-semibold">IT Support System</h1>
@@ -77,19 +76,19 @@
             <div class="flex items-center gap-4">
                 <span class="text-sm text-gray-600">{{ session.user.name }}</span>
                 <span class="text-xs text-gray-400">
-                    ({% if role == "admin" %}Administrator{% elif role == "support" %}Support{% elif role == "butik" %}Butik{% elif role == "user" %}Bruger{% endif %})
+                    ({% if role == "admin" %}Administrator{% elif role == "support" %}Support{% elif role == "butik" %}Butik{% elif role == "user" %}Bruger{% endif %}{% if session.user.store_names %} · {{ session.user.store_names | join(', ') }}{% endif %})
                 </span>
                 <a href="/logout" class="text-sm text-red-600 hover:underline">Log ud</a>
             </div>
 
         </div>
 
-        <!-- CONTENT -->
+        <!-- Content -->
         <div class="p-6 overflow-y-auto flex-1">
             {% block content %}{% endblock %}
         </div>
 
-        <!-- FOOTER -->
+        <!-- Footer -->
         <div class="bg-white border-t px-6 py-2 text-right text-xs text-gray-400">
             Udviklet af Benjamin L. Pedersen
         </div>

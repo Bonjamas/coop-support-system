@@ -1,8 +1,7 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - coop-support-system
+
+env:
+  AZURE_WEBAPP_NAME: coop-support-system
 
 on:
   release:
@@ -14,11 +13,12 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - name: Verificer release findes
@@ -31,50 +31,26 @@ jobs:
             exit 1
           fi
 
-      - name: Beregn tag der skal deployes
-        id: tag
-        run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            echo "value=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Checkout valgt tag
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: refs/tags/${{ steps.tag.outputs.value }}
+          ref: refs/tags/${{ github.event.release.tag_name || inputs.tag }}
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Create and Start virtual environment and Install dependencies
-        run: |
-          python -m venv antenv
-          source antenv/bin/activate
-          pip install -r requirements.txt
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            .
-            !antenv/
+          path: .
 
   deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment: production
     permissions:
       id-token: write
-      contents: read
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: production
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: python-app
 
@@ -85,9 +61,8 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
         with:
-          app-name: 'coop-support-system'
-          slot-name: 'Production'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
