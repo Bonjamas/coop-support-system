@@ -1,7 +1,6 @@
 USER = {
     "key": "admin",
     "oid": "a59ecfe8-c8b2-4f6c-a760-980a914c7177",
-    "name": "Nikolaj Admin",
     "role": "admin",
 }
 

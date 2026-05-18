@@ -1,7 +1,6 @@
 USER = {
     "key": "hvidovre",
     "oid": "3e2718de-6ead-4a85-9293-9f628722bf26",
-    "name": "Kvickly Hvidovre",
     "role": "butik",
 }
 

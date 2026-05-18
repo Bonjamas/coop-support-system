@@ -1,7 +1,6 @@
 USER = {
     "key": "greve",
     "oid": "7a38f75b-a896-499d-89d6-579cb367314d",
-    "name": "365discount Greve",
     "role": "butik",
 }
 

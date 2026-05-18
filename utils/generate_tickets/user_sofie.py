@@ -1,7 +1,6 @@
 USER = {
     "key": "sofie",
     "oid": "b4611dae-fd5d-4ac3-b098-e3569dcc2e1d",
-    "name": "Sofie Christensen",
     "role": "user",
 }
 

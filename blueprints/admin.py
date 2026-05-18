@@ -1,5 +1,4 @@
 from flask import Blueprint, redirect, render_template, url_for
-
 from models import Ticket, db
 from utils.auth import get_user_role
 from utils.decorators import login_required, role_required

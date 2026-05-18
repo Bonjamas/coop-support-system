@@ -1,7 +1,6 @@
 USER = {
     "key": "karlslunde",
     "oid": "28ecb256-770c-4d8b-830f-68d936b1c96b",
-    "name": "SuperBrugsen Karlslunde",
     "role": "butik",
 }
 

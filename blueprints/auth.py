@@ -1,7 +1,5 @@
 import os
-
 from flask import Blueprint, abort, redirect, request, session, url_for
-
 from utils.auth import GRAPH_SCOPES, build_msal_app, store_names_from_claims
 
 auth_bp = Blueprint("auth", __name__)
@@ -34,13 +32,13 @@ def auth_callback():
         abort(400, f"Login fejlede: {message}")
 
     claims = result["id_token_claims"]
+    session["access_token"] = result.get("access_token")
     session["user"] = {
         "oid": claims.get("oid"),
         "name": claims.get("name"),
         "roles": claims.get("roles", []),
         "store_names": store_names_from_claims(claims),
     }
-    session["access_token"] = result.get("access_token")
     return redirect(url_for("pages.index"))
 
 

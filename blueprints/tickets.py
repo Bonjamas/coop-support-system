@@ -1,14 +1,10 @@
 from flask import Blueprint, abort, redirect, render_template, request, url_for
-
 from models import Ticket, db
 from utils.auth import get_user, get_user_role
 from utils.decorators import login_required, role_required
 from utils.graph import list_users, resolve_user_name
 
 tickets_bp = Blueprint("tickets", __name__)
-
-ALLOWED_PRIORITIES = {"low", "medium", "high"}
-ALLOWED_TYPES = {"support", "funktionalitet", "nedbrud"}
 
 
 @tickets_bp.route("/ticket/<int:ticket_id>", methods=["GET", "POST"])
@@ -38,20 +34,8 @@ def view_ticket(ticket_id):
             ticket.contact_info = request.form.get("contact_info")
             ticket.update_type(request.form.get("type"), user)
             ticket.update_state(request.form.get("state"), user)
-
-            new_assigned_oid = request.form.get("assigned_to")
-            if new_assigned_oid and new_assigned_oid != ticket.assigned_to:
-                new_assigned_name = resolve_user_name(new_assigned_oid)
-            else:
-                new_assigned_name = ticket.assigned_to_name
-            ticket.update_assignment(new_assigned_oid, new_assigned_name, user)
-
-            new_requested_oid = request.form.get("requested_by")
-            if new_requested_oid and new_requested_oid != ticket.requested_by:
-                new_requested_name = resolve_user_name(new_requested_oid)
-            else:
-                new_requested_name = ticket.requested_by_name
-            ticket.update_requested_by(new_requested_oid, new_requested_name, user)
+            ticket.update_assignment(request.form.get("assigned_to"), user)
+            ticket.update_requested_by(request.form.get("requested_by"), user)
 
         elif action == "resolve":
             if role not in ("admin", "support"):
@@ -102,13 +86,6 @@ def create_ticket():
         if not title:
             abort(400, "Titel er påkrævet.")
 
-        priority = request.form.get("priority")
-        if priority not in ALLOWED_PRIORITIES:
-            priority = "medium"
-        ticket_type = request.form.get("type")
-        if ticket_type not in ALLOWED_TYPES:
-            ticket_type = "support"
-
         if role in ("butik", "user"):
             requested_by_oid = user["oid"]
             requested_by_name = user["name"]
@@ -125,9 +102,9 @@ def create_ticket():
         ticket = Ticket(
             title=title,
             description=request.form.get("description"),
-            priority=priority,
+            priority=request.form.get("priority"),
             state="new",
-            type=ticket_type,
+            type=request.form.get("type"),
             contact_info=request.form.get("contact_info"),
             created_by=user["oid"],
             created_by_name=user["name"],

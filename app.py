@@ -1,11 +1,8 @@
-from dotenv import load_dotenv
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from blueprints import admin_bp, auth_bp, errors_bp, pages_bp, tickets_bp
 from config import Config
 from models import db
-
-load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -20,10 +17,7 @@ app.register_blueprint(errors_bp)
 
 
 with app.app_context():
-    try:
-        db.create_all()
-    except Exception:
-        pass
+    db.create_all()
 
 
 if __name__ == "__main__":

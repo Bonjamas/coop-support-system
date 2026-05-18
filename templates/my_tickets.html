@@ -2,9 +2,6 @@
 
 {% block content %}
 
-{% set current_sort = request.args.get('sort', 'updated') %}
-{% set current_order = request.args.get('order', 'desc') %}
-
 <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold">{{ title }}</h2>
     <form method="GET" class="flex gap-2">

@@ -1,15 +1,10 @@
-from datetime import datetime, timezone
-
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
+from utils.graph import resolve_user_name
 
 db = SQLAlchemy()
 
 END_USER_ROLES = ("butik", "user")
-
-
-def _utcnow():
-    return datetime.now(timezone.utc)
-
 
 class Ticket(db.Model):
     STATE_LABELS = {
@@ -49,8 +44,8 @@ class Ticket(db.Model):
     contact_info = db.Column(db.String(100))
     type = db.Column(db.String(50))
 
-    created_at = db.Column(db.DateTime, default=_utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=_utcnow, onupdate=_utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
     comments = db.relationship("Comment", backref="ticket", lazy=True, cascade="all, delete-orphan", passive_deletes=True)
 
@@ -88,11 +83,13 @@ class Ticket(db.Model):
         ))
         self.state = new_state
 
-    def update_assignment(self, new_oid, new_name, actor):
+    def update_assignment(self, new_oid, actor, new_name=None):
         new_oid = (new_oid or "").strip()
         previous_oid = self.assigned_to
 
         if new_oid:
+            if new_name is None:
+                new_name = resolve_user_name(new_oid)
             self.assigned_to = new_oid
             self.assigned_to_name = new_name
             if new_oid != previous_oid:
@@ -106,9 +103,11 @@ class Ticket(db.Model):
                 "Tildeling fjernet.", actor=actor, ticket_id=self.id
             ))
 
-    def update_requested_by(self, new_oid, new_name, actor):
+    def update_requested_by(self, new_oid, actor, new_name=None):
         if not new_oid or new_oid == self.requested_by:
             return
+        if new_name is None:
+            new_name = resolve_user_name(new_oid)
         self.requested_by = new_oid
         self.requested_by_name = new_name
         db.session.add(Comment.system_internal(
@@ -188,7 +187,7 @@ class Comment(db.Model):
     author_name = db.Column(db.String(100))
     type = db.Column(db.String(20))
 
-    created_at = db.Column(db.DateTime, default=_utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.now(), nullable=False)
 
     # --- FACTORIES ---
     @classmethod
