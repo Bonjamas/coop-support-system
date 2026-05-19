@@ -1,10 +1,30 @@
+import logging
+
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from models import Ticket, db
 from utils.auth import get_user, get_user_role
 from utils.decorators import login_required, role_required
 from utils.graph import list_users, resolve_user_name
 
+logger = logging.getLogger(__name__)
+
 tickets_bp = Blueprint("tickets", __name__)
+
+
+def _log_denied(reason, user, role, ticket_id, **fields):
+    logger.warning(
+        "Access denied (%s) on ticket %s by %s",
+        reason,
+        ticket_id,
+        user.get("name") if user else None,
+        extra={
+            "denied_reason": reason,
+            "actor_oid": user.get("oid") if user else None,
+            "actor_role": role,
+            "ticket_id": ticket_id,
+            **fields,
+        },
+    )
 
 
 @tickets_bp.route("/ticket/<int:ticket_id>", methods=["GET", "POST"])
@@ -15,6 +35,7 @@ def view_ticket(ticket_id):
     user = get_user()
 
     if role in ("butik", "user") and ticket.created_by != user.get("oid"):
+        _log_denied("foreign_ticket_view", user, role, ticket_id)
         abort(403)
 
     if request.method == "POST":
@@ -22,6 +43,7 @@ def view_ticket(ticket_id):
 
         if action == "edit":
             if role not in ("admin", "support"):
+                _log_denied("edit_requires_staff", user, role, ticket_id)
                 abort(403)
 
             title = (request.form.get("title") or "").strip()
@@ -39,11 +61,13 @@ def view_ticket(ticket_id):
 
         elif action == "resolve":
             if role not in ("admin", "support"):
+                _log_denied("resolve_requires_staff", user, role, ticket_id)
                 abort(403)
             ticket.update_state("resolved", user)
 
         elif action == "close":
             if role not in ("butik", "user") or ticket.created_by != user.get("oid"):
+                _log_denied("close_requires_owner", user, role, ticket_id)
                 abort(403)
             ticket.close_by(user)
 
@@ -127,7 +151,14 @@ def create_ticket():
 @login_required
 @role_required("admin")
 def delete_ticket(ticket_id):
+    actor = get_user() or {}
     ticket = Ticket.query.get_or_404(ticket_id)
     db.session.delete(ticket)
     db.session.commit()
+    logger.warning(
+        "Ticket %s deleted by %s",
+        ticket_id,
+        actor.get("name"),
+        extra={"ticket_id": ticket_id, "actor_oid": actor.get("oid")},
+    )
     return redirect(url_for("pages.dashboard"))

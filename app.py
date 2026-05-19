@@ -1,8 +1,17 @@
+import logging
+
 from flask import Flask
+from sqlalchemy.exc import OperationalError
 from werkzeug.middleware.proxy_fix import ProxyFix
 from blueprints import admin_bp, auth_bp, errors_bp, pages_bp, tickets_bp
 from config import Config
 from models import db
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -17,7 +26,10 @@ app.register_blueprint(errors_bp)
 
 
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except OperationalError as e:
+        logger.error("Database unavailable at startup; skipping create_all: %s", e)
 
 
 if __name__ == "__main__":

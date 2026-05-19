@@ -1,10 +1,15 @@
+import logging
+
 import requests
 from flask import session
+
+logger = logging.getLogger(__name__)
 
 
 def graph_get(url):
     token = session.get("access_token")
     if not token:
+        logger.warning("Graph call without access_token: %s", url)
         return None
 
     try:
@@ -14,9 +19,16 @@ def graph_get(url):
             timeout=5,
         )
     except requests.RequestException:
+        logger.exception("Graph request failed: %s", url)
         return None
 
     if not response.ok:
+        logger.warning(
+            "Graph responded %s for %s: %s",
+            response.status_code,
+            url,
+            response.text[:200],
+        )
         return None
 
     return response.json()
