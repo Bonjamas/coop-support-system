@@ -1,5 +1,4 @@
 import logging
-
 from flask import Blueprint, redirect, render_template, url_for
 from models import Ticket, db
 from utils.auth import get_user, get_user_role
@@ -30,13 +29,7 @@ def generate_testdata():
 @login_required
 @role_required("admin")
 def delete_all_tickets():
-    actor = get_user() or {}
-    deleted = Ticket.query.delete()
+    Ticket.query.delete()
     db.session.commit()
-    logger.warning(
-        "All tickets deleted (%s rows) by %s",
-        deleted,
-        actor.get("name"),
-        extra={"actor_oid": actor.get("oid"), "deleted_rows": deleted},
-    )
+    logger.warning("All tickets deleted by %s", get_user().get("name"))
     return redirect(url_for("admin.admin_panel"))

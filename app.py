@@ -1,5 +1,4 @@
 import logging
-
 from flask import Flask
 from sqlalchemy.exc import OperationalError
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -29,7 +28,9 @@ with app.app_context():
     try:
         db.create_all()
     except OperationalError as e:
-        logger.error("Database unavailable at startup; skipping create_all: %s", e)
+        logger.error("Database unavailable at startup; skipping db.create_all: %s", e)
+
+logger.info("App started")
 
 
 if __name__ == "__main__":
