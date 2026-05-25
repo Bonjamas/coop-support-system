@@ -1,8 +1,11 @@
+import logging
 from flask import Blueprint, redirect, render_template, url_for
 from models import Ticket, db
-from utils.auth import get_user_role
+from utils.auth import get_user, get_user_role
 from utils.decorators import login_required, role_required
 from utils.generate_tickets import generate_dummy_tickets
+
+logger = logging.getLogger(__name__)
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -28,4 +31,5 @@ def generate_testdata():
 def delete_all_tickets():
     Ticket.query.delete()
     db.session.commit()
+    logger.warning("All tickets deleted by %s", get_user().get("name"))
     return redirect(url_for("admin.admin_panel"))

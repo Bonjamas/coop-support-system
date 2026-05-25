@@ -1,7 +1,5 @@
 from functools import wraps
-
 from flask import abort, redirect, session, url_for
-
 from utils.auth import get_user_role
 
 

@@ -1,3 +1,5 @@
+import logging
+
 from models import Ticket, db
 from utils.graph import resolve_user_name
 
@@ -13,6 +15,8 @@ from . import (
     user_sofie,
     user_thomas,
 )
+
+logger = logging.getLogger(__name__)
 
 USER_MODULES = [
     admin_nikolaj,
@@ -46,7 +50,7 @@ def generate_dummy_tickets():
             count += 1
 
     db.session.commit()
-    print(f"Dummy data created: {count} tickets")
+    logger.info("Dummy data created: %s tickets", count)
 
 
 def _create_ticket(ticket_data, creator, users):

@@ -1,8 +1,11 @@
+import logging
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from models import Ticket, db
 from utils.auth import get_user, get_user_role
 from utils.decorators import login_required, role_required
 from utils.graph import list_users, resolve_user_name
+
+logger = logging.getLogger(__name__)
 
 tickets_bp = Blueprint("tickets", __name__)
 
@@ -64,6 +67,7 @@ def view_ticket(ticket_id):
             abort(400, "Ugyldig handling.")
 
         db.session.commit()
+        logger.info("Ticket %s: %s by %s", ticket_id, action, user.get("name"))
         return redirect(url_for("tickets.view_ticket", ticket_id=ticket_id))
 
     users = list_users() if role in ("admin", "support") else []
@@ -117,6 +121,7 @@ def create_ticket():
         db.session.flush()
         ticket.log_creation(user)
         db.session.commit()
+        logger.info("Ticket %s created by %s", ticket.id, user.get("name"))
         return redirect(url_for("tickets.view_ticket", ticket_id=ticket.id))
 
     users = list_users() if role in ("admin", "support") else []
@@ -130,4 +135,5 @@ def delete_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
     db.session.delete(ticket)
     db.session.commit()
+    logger.info("Ticket %s deleted by %s", ticket_id, get_user().get("name"))
     return redirect(url_for("pages.dashboard"))
