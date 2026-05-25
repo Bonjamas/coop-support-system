@@ -1,6 +1,9 @@
+import logging
 import os
 from flask import Blueprint, abort, redirect, request, session, url_for
 from utils.auth import GRAPH_SCOPES, build_msal_app, store_names_from_claims
+
+logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -29,6 +32,7 @@ def auth_callback():
     )
     if "error" in result:
         message = result.get("error_description", result["error"])
+        logger.error("MSAL token acquisition failed: %s", message)
         abort(400, f"Login fejlede: {message}")
 
     claims = result["id_token_claims"]
